@@ -38,9 +38,10 @@ def fetch_data_from_db(device_id, year, month):
         )
 
         # Query to fetch data for the device
-        query = f"""
-        SELECT * FROM air_quality_data
-        WHERE deviceID = '{device_id}' AND YEAR(datetime) = {year} AND MONTH(datetime) = {month}
+        query = """
+        SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc, temp, humidity, battery, viral_index
+        FROM reading_db
+        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
         """
 
         # Fetch the data
