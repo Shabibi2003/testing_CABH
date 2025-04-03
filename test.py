@@ -50,7 +50,12 @@ device_info = {
 }
 
 # Function to plot and display feature heatmaps in Streamlit
-def plot_and_display_feature_heatmaps(df, features, year, month):
+ddef plot_and_display_feature_heatmaps(df, features, year, month):
+    # Check if data exists
+    if df.empty:
+        st.warning("DataFrame is empty!")
+        return
+
     feature_boundaries = {
         'aqi': [0, 50, 100, 150, 200, 300, 500],
         'pm25': [0, 12, 35, 55, 150, 250, 500],
@@ -123,3 +128,4 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
 
         # Display heatmap
         st.pyplot(fig)
+
