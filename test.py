@@ -16,7 +16,6 @@ password = "(#&pxJ&p7JvhA7<B"
 database = "cabh_iaq_db"
 
 # Example raw text (use the actual text you have here)
-dimport json
 
 # Example raw text data (replace with your actual raw data)
 device_info_text = """
