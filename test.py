@@ -52,74 +52,7 @@ device_data = {
 # Streamlit app
 st.title("CABH Indoor Air Quality Monitoring")
 
-# Create columns for user inputs (deviceID, year, month)
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    device_id = st.text_input("Enter Device ID:", value="1202240012")
-
-with col2:
-    year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
-
-with col3:
-    month = st.selectbox("Select Month:", list(range(1, 13)))
-
-# Get the address and typology for the entered device ID
-device_info = device_data.get(device_id, ("Not Available", "Not Available"))
-
-# Display address and typology
-st.write(f"Address: {device_info[0]}")
-st.write(f"Typology: {device_info[1]}")
-
-# Button to generate heatmaps
-if st.button("Generate Heatmaps"):
-    if not device_id.strip():
-        st.error("Device ID cannot be empty.")
-        st.stop()
-    try:
-        # Connect to the MySQL database
-        conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database
-        )
-        cursor = conn.cursor()
-
-        # Query to fetch data
-        query = """
-        SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc, temp, humidity, battery, viral_index
-        FROM reading_db
-        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
-        """
-        cursor.execute(query, (device_id, year, month))
-        rows = cursor.fetchall()
-        st.success("Data fetched successfully.")
-        if rows:
-            # Process data
-            df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity", "battery", "viral_index"])
-            df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-            df.set_index('datetime', inplace=True)
-
-            # Generate heatmaps and statistics
-            pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
-            plot_and_display_feature_heatmaps(df, pollutants, year, month)
-
-        else:
-            st.warning("No data found for the given Device ID and selected month.")
-
-    except mysql.connector.Error as e:
-        st.error(f"Database error: {e}")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
-    finally:
-        # Ensure the database connection is closed
-        if 'conn' in locals() and conn.is_connected():
-            cursor.close()
-            conn.close()
-            st.info("Database connection closed.")
-
-# Function to plot and display heatmaps in Streamlit
+# Function to plot and display heatmaps for each feature (pollutant)
 def plot_and_display_feature_heatmaps(df, features, year, month):
     feature_boundaries = {
         'aqi': [0, 50, 100, 150, 200, 300, 500],
@@ -208,3 +141,73 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         # Display the heatmap in Streamlit
         st.pyplot(fig)
         plt.close()
+
+# Streamlit app UI
+st.title("CABH Indoor Air Quality Monitoring")
+
+# Create columns for user inputs (deviceID, year, month)
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    device_id = st.text_input("Enter Device ID:", value="1202240012")
+
+with col2:
+    year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
+
+with col3:
+    month = st.selectbox("Select Month:", list(range(1, 13)))
+
+# Get the address and typology for the entered device ID
+device_info = device_data.get(device_id, ("Not Available", "Not Available"))
+
+# Display address and typology
+st.write(f"Address: {device_info[0]}")
+st.write(f"Typology: {device_info[1]}")
+
+# Button to generate heatmaps
+if st.button("Generate Heatmaps"):
+    if not device_id.strip():
+        st.error("Device ID cannot be empty.")
+        st.stop()
+    try:
+        # Connect to the MySQL database
+        conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
+        cursor = conn.cursor()
+
+        # Query to fetch data
+        query = """
+        SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc, temp, humidity, battery, viral_index
+        FROM reading_db
+        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
+        """
+        cursor.execute(query, (device_id, year, month))
+        rows = cursor.fetchall()
+        st.success("Data fetched successfully.")
+        if rows:
+            # Process data
+            df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity", "battery", "viral_index"])
+            df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+            df.set_index('datetime', inplace=True)
+
+            # Generate heatmaps and statistics
+            pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
+            plot_and_display_feature_heatmaps(df, pollutants, year, month)
+
+        else:
+            st.warning("No data found for the given Device ID and selected month.")
+
+    except mysql.connector.Error as e:
+        st.error(f"Database error: {e}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
+    finally:
+        # Ensure the database connection is closed
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
+            st.info("Database connection closed.")
