@@ -7,12 +7,65 @@ import matplotlib.pyplot as plt
 import numpy as np
 import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
+import json
 
 # Database connection details
 host = "139.59.34.149"
 user = "neemdb"
 password = "(#&pxJ&p7JvhA7<B"
 database = "cabh_iaq_db"
+
+# Example raw text (use the actual text you have here)
+device_info_text = """
+{
+    "ApiResponse": "Success",
+    "RowCount": 31,
+    "Data": [
+        {
+            "deviceID": "1201240075",
+            "deployementID": "OFGSI-005",
+            "typology": "Office",
+            "active": "1",
+            "primary_sensor": "1",
+            "spaceType": null,
+            "installation_date": "2024-02-21 00:00:00",
+            "uninstallation_date": null,
+            "address": "Hines Office, 12th Floor, One Horizon Centre, Sec-43, Gurugram",
+            "latitude": "28.456",
+            "longitude": "77.0956",
+            "nearby_AQI_station": "Sector-51, Gurugram-HSPCB (3.5 kms)",
+            "outdoor_deviceID": "CPCB1703205345",
+            "contact_person": "Mr. Dharmendra Singh (Assistant Manager-IT)",
+            "contact_number": "9716820034",
+            "emailID": "Ashwin.Bhakay@hines.com , Dharmendra.Singh@hines.c",
+            "total_no_of_floors": "25",
+            "installation_floor_no": "12",
+            "total_build_up_area_sq_m": "0",
+            "occupancy": "25",
+            "created_on": "2024-08-20 04:41:16",
+            "updated_on": "2024-08-20 04:41:16"
+        }
+    ]
+}
+"""
+
+# Function to extract device details from the raw text
+def extract_device_details(device_id, device_info_text):
+    try:
+        data = json.loads(device_info_text)  # Parse the text as JSON
+        devices = data.get("Data", [])
+        
+        # Find the device by device_id
+        device_info = next((item for item in devices if item["deviceID"] == device_id), None)
+        
+        if device_info:
+            address = device_info.get("address", "NaN")
+            typology = device_info.get("typology", "NaN")
+            return address, typology
+        else:
+            return "NaN", "NaN"
+    except json.JSONDecodeError:
+        return "Error", "Error"
 
 # Function to plot and display heatmaps in Streamlit
 def plot_and_display_feature_heatmaps(df, features, year, month):
@@ -107,7 +160,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
 st.title("CABH Indoor Air Quality Monitoring")
 
 # User inputs
-device_id = st.text_input("Enter Device ID:", value="1202240012")
+device_id = st.text_input("Enter Device ID:", value="1201240075")
 year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
 month = st.selectbox("Select Month:", list(range(1, 13)))
 
@@ -116,6 +169,15 @@ if st.button("Generate Heatmaps"):
     if not device_id.strip():
         st.error("Device ID cannot be empty.")
         st.stop()
+
+    # Extract device details from raw text
+    address, typology = extract_device_details(device_id, device_info_text)
+
+    # Display the extracted details
+    st.subheader(f"Device ID: {device_id}")
+    st.write(f"Address: {address}")
+    st.write(f"Typology: {typology}")
+
     try:
         # Connect to the MySQL database
         conn = mysql.connector.connect(
