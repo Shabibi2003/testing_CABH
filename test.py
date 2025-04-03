@@ -50,7 +50,7 @@ device_info = {
 }
 
 # Function to plot and display feature heatmaps in Streamlit
-ddef plot_and_display_feature_heatmaps(df, features, year, month):
+def plot_and_display_feature_heatmaps(df, features, year, month):
     # Check if data exists
     if df.empty:
         st.warning("DataFrame is empty!")
