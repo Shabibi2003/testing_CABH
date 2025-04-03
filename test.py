@@ -15,8 +15,6 @@ user = "neemdb"
 password = "(#&pxJ&p7JvhA7<B"
 database = "cabh_iaq_db"
 
-# Example raw text (use the actual text you have here)
-
 # Example raw text data (replace with your actual raw data)
 device_info_text = """
 {
@@ -116,14 +114,6 @@ def extract_device_details(device_id, device_info_text):
             return "NaN", "NaN"
     except json.JSONDecodeError:
         return "Error", "Error"
-
-# Example usage for deviceID "1201240075"
-# device_id = "1201240075"
-address, typology = extract_device_details(device_id, device_info_text)
-
-print(f"Address: {address}")
-print(f"Typology: {typology}")
-
 
 # Function to plot and display heatmaps in Streamlit
 def plot_and_display_feature_heatmaps(df, features, year, month):
