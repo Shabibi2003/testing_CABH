@@ -23,37 +23,40 @@ device_info = {
     "1203240081": ("26A Poorvi Marg, Vasant Vihar, New Delhi-110057 (EDS, E-Block, Delhi)", "Office"),
     "1202240011": ("D-188, Abul Fazal Enclave-I, Jamia Nagar, New Delhi-110025", "Apartment"),
     "1202240027": ("D-188, Abul Fazal Enclave-I, Jamia Nagar, New Delhi-110025", "Apartment"),
-    "1203240076": ("D 184 ABUL FAZAL ENCLAVE, JAMIA NAGAR, OKHLA, NEW DELHI 25", "Midrise Apartment (G+5)"),
-    "1203240078": ("D 184 ABUL FAZAL ENCLAVE, JAMIA NAGAR, OKHLA, NEW DELHI 25", "Midrise Apartment (G+5)"),
-    "1203240075": ("A 48/B, Third Floor, Abul Fazal Enclave Part II, New Delhi", "Residential"),
-    "1201240077": ("448, Sector-9, Pocket-1 DDA Flats Dwarka, New Delhi-110075", "Residential"),
-    "1201240072": ("448, Sector-9, Pocket-1 DDA Flats Dwarka, New Delhi-110075", "Residential"),
-    "1203240079": ("C-403, Prince Apartments, Plot 54, I.P. Extension, Patparganj, Delhi - 110092", "Residential, Multi-family"),
-    "1201240079": ("B-3/527, Ekta Gardens Apts, Patparganj, Delhi - 110092", "Residential"),
-    "1201240085": ("B-3/527, Ekta Gardens Apts, Patparganj, Delhi - 110092", "Residential"),
-    "1203240083": ("Flat No. 25, Tower E2, Sector E1, Vasant Kunj, New Delhi", "Residential"),
-    "1203240073": ("Flat no. 495, Block 14, Kaveri Apartments, D6, Vasant Kunj, Delhi - 110070", "Residential"),
-    "1203240074": ("569 sector A pocket C Vasant Kunj, Delhi - 110070", "Residential"),
-    "1201240076": ("H No.-296 Near Durga Ashram, Chhatarpur, Delhi-110074", "Residential"),
-    "1212230160": ("H No.-296 Near Durga Ashram, Chhatarpur, Delhi-110074", "Residential"),
-    "1202240009": ("D-13A 2nd Floor Left side, Paryavaran Complex, Delhi 1100030", "Office"),
-    "1202240008": ("D-13A 2nd Floor Left side, Paryavaran Complex, Delhi 1100030", "Office"),
-    "1201240073": ("569 sector A pocket C Vasant Kunj, Delhi - 110070", "Residential"),
-    "1203240080": ("F-5, 318-N, Chirag Delhi, Delhi-110017", "Residential"),
-    "1201240074": ("F-5, 318-N, Chirag Delhi, Delhi-110017", "Residential"),
-    "1203240077": ("B-2/51-A, Keshav Puram", "Apartment"),
-    "1203240082": ("B-2/51-A, Keshav Puram", "Apartment"),
-    "1202240029": ("St. Mary's School, Dwarka Sec-19", "Office"),
-    "1202240028": ("St. Mary's School, Dwarka Sec-19", "Office"),
-    "1202240010": ("St. Mary's School, Dwarka Sec-19", "Office"),
-    "1202240012": ("St. Mary's School, Dwarka Sec-19", "School")
+    # Add all other devices...
 }
+
+# Function to fetch data from MySQL based on device_id, year, and month
+def fetch_data_from_db(device_id, year, month):
+    try:
+        # Connect to the database
+        connection = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
+
+        # Query to fetch data for the device
+        query = f"""
+        SELECT * FROM air_quality_data
+        WHERE deviceID = '{device_id}' AND YEAR(datetime) = {year} AND MONTH(datetime) = {month}
+        """
+
+        # Fetch the data
+        df = pd.read_sql(query, connection)
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        connection.close()
+        return df
+
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
+        return pd.DataFrame()
 
 # Function to plot and display feature heatmaps in Streamlit
 def plot_and_display_feature_heatmaps(df, features, year, month):
-    # Check if data exists
     if df.empty:
-        st.warning("DataFrame is empty!")
+        st.warning("No data available for the selected device and time period.")
         return
 
     feature_boundaries = {
@@ -72,60 +75,68 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         'voc': ['Good', 'Poor']
     }
 
-    # Filter data for the selected month
+    # Filter data for the selected month and year
     for feature in features:
-        indoor_feature = feature
-
-        # Filter data for the current feature and year
         feature_data = df[(df.index.year == year) & (df.index.month == month)][feature]
 
         if feature_data.empty:
             st.warning(f"No data available for {feature} in {calendar.month_name[month]} {year}.")
             continue
 
-        # Initialize the figure for a single subplot (for a single month)
+        # Plotting the heatmap
         fig, ax = plt.subplots(figsize=(10, 6))
 
-        # Define custom color map
         color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000', '#8B0000']
         cmap = ListedColormap(color_list)
 
-        # Get boundaries and labels for the feature
         boundaries = feature_boundaries[feature]
         labels = feature_labels[feature]
 
-        # Adjust boundaries to avoid extra tick issue
         if len(boundaries) - 1 != len(labels):
-            labels = labels[:-1]  # Adjust if boundaries and labels lengths don't match
+            labels = labels[:-1]
 
-        # Prepare the calendar data (up to 5 weeks in a month)
+        # Prepare the calendar data (5 weeks in a month)
         num_days = calendar.monthrange(year, month)[1]
-        calendar_data = np.full((5, 7), np.nan)  # 5 rows to accommodate up to 5 weeks
+        calendar_data = np.full((5, 7), np.nan)
 
         for day in range(1, num_days + 1):
             day_values = feature_data[feature_data.index.day == day]
             if not day_values.empty:
                 daily_avg = day_values.mean()
-
-                # Calculate position in the calendar grid
-                first_day_of_month = calendar.monthrange(year, month)[0]  # First weekday of the month
+                first_day_of_month = calendar.monthrange(year, month)[0]
                 week_row = (day + first_day_of_month - 1) // 7
                 week_col = (day + first_day_of_month - 1) % 7
 
-                # Ensure the week_row is within bounds (maximum of 5 rows)
                 if week_row < 5:
                     calendar_data[week_row, week_col] = daily_avg
 
-        # Plot the heatmap for the selected feature
         norm = BoundaryNorm(boundaries, cmap.N)
         sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, norm=norm,
-                    cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 
+                    cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     yticklabels=[1, 2, 3, 4, 5], ax=ax, linewidths=1, linecolor='black')
 
-        ax.set_title(f"{calendar.month_name[month]} {year} - {indoor_feature}", fontsize=14)
+        ax.set_title(f"{calendar.month_name[month]} {year} - {feature}", fontsize=14)
         ax.set_xlabel("Day of the Week", fontsize=12)
         ax.set_ylabel("Week of the Month", fontsize=12)
 
-        # Display heatmap
         st.pyplot(fig)
 
+# Streamlit UI
+st.title("Air Quality Dashboard")
+
+# Select device ID
+device_id = st.selectbox("Select Device ID", list(device_info.keys()))
+st.write(f"Device Information: {device_info.get(device_id)}")
+
+# Select year and month
+year = st.slider("Select Year", min_value=2020, max_value=2025, value=2023)
+month = st.slider("Select Month", min_value=1, max_value=12, value=1)
+
+# Fetch data
+df = fetch_data_from_db(device_id, year, month)
+
+# List of features to plot
+features = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
+
+# Display the heatmaps
+plot_and_display_feature_heatmaps(df, features, year, month)
