@@ -145,7 +145,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
         cbar.set_ticklabels(labels)
         cbar.ax.tick_params(labelsize=12)  # Adjust font size of color bar ticks
-        cbar.ax.set_ylabel(f"{feature} Levels", fontsize=14)  # Label for the color bar
+        # cbar.ax.set_ylabel(f"{feature} Levels", fontsize=14)  # Label for the color bar
 
         # Display the heatmap in Streamlit
         st.pyplot(fig)
