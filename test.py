@@ -212,30 +212,31 @@ if st.button("Generate Heatmaps"):
         )
         cursor = conn.cursor()
 
-        # Query to fetch data
+        # Query to fetch only required columns
         query = """
-            SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc
-            FROM reading_db
-            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s; AND DateTime >= '2024-01-01'
+        SELECT datetime, pm25, pm10, aqi, co2, voc
+        FROM reading_db
+        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
         """
-
         cursor.execute(query, (device_id, year, selected_month))
-
         rows = cursor.fetchall()
-        #st.success("Data fetched successfully.")
+
         if rows:
             # Process data
-            df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc"])
+            df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc"])
             df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
             df.set_index('datetime', inplace=True)
 
             st.success("Data fetched successfully.")
-            
-            plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, selected_month)
 
-            # Generate heatmaps and statistics
-            # pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
-            # plot_and_display_feature_heatmaps(df, pollutants, year, month)
+            # Optimize heatmap generation by processing pollutants in parallel
+            from concurrent.futures import ThreadPoolExecutor
+
+            def generate_heatmap(feature):
+                plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
+
+            with ThreadPoolExecutor() as executor:
+                executor.map(generate_heatmap, pollutant_display_names.keys())
 
         else:
             st.warning("No data found for the given Device ID and selected month.")
