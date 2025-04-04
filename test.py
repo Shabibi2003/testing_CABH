@@ -196,13 +196,15 @@ if st.button("Generate Heatmaps"):
         """
         cursor.execute(query, (device_id, year, month))
         rows = cursor.fetchall()
-        st.success("Data fetched successfully.")
+        #st.success("Data fetched successfully.")
         if rows:
             # Process data
             df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity", "battery", "viral_index"])
             df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
             df.set_index('datetime', inplace=True)
 
+            st.success("Data fetched successfully.")
+            
             plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, month)
             # Generate heatmaps and statistics
             # pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
