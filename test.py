@@ -143,10 +143,8 @@ st.markdown("""
     <style>
         .title {
             font-size: 36px;
-            color: #3e8e41;
             text-align: center;
             padding: 20px;
-            background-color: #e8f5e9;
             border-radius: 10px;
             border-bottom: 4px solid red;  /* Red underline */
         }
