@@ -137,7 +137,25 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         plt.close()
 
 # Streamlit app UI
-st.title("Indoor Air Quality Trends")
+# st.title("Indoor Air Quality Trends")
+# Add custom CSS
+st.markdown("""
+    <style>
+        .title {
+            font-size: 36px;
+            color: #3e8e41;
+            text-align: center;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            border-bottom: 4px solid red;  /* Red underline */
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Display the title with a red underline
+st.markdown('<h1 class="title">Indoor Air Quality Trends</h1>', unsafe_allow_html=True)
+
 
 # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)
