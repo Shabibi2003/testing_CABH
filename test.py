@@ -195,6 +195,9 @@ device_info = device_data.get(device_id, ("Not Available", "Not Available"))
 st.write(f"Address: {device_info[0]}")
 st.write(f"Typology: {device_info[1]}")
 
+st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
+
+
 # Button to generate heatmaps
 if st.button("Generate Heatmaps"):
     with st.spinner("Generating Heatmaps....please wait"):
