@@ -137,7 +137,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
                     ax=ax, linewidths=1, linecolor='black',
                     annot_kws={"size": 6})  # Increase font size for annotations
         ax.xaxis.tick_top()
-        ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=6, pad=35)
+        ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=6, pad=20)
         ax.set_xlabel("Day of the Week", fontsize=6)
         ax.set_ylabel("Week", fontsize=6)
 
@@ -153,7 +153,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         # Set color bar ticks and labels
         cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
         cbar.set_ticklabels(labels)
-        cbar.ax.tick_params(labelsize=12)  # Adjust font size of color bar ticks
+        cbar.ax.tick_params(labelsize=6)  # Adjust font size of color bar ticks
         # cbar.ax.set_ylabel(f"{feature} Levels", fontsize=14)  # Label for the color bar
 
         # Display the heatmap in Streamlit
