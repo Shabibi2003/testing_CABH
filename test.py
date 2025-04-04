@@ -154,7 +154,7 @@ st.markdown("""
 # Display the title with a red underline
 st.markdown('<h1 class="title">Indoor Air Quality Trends</h1>', unsafe_allow_html=True)
 
-st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)
