@@ -98,6 +98,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
 
         # Initialize the figure for a single subplot (for a single month)
         fig, ax = plt.subplots(figsize=(3, 3))
+        plt.tight_layout()
 
         # Define custom color map
         color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000', '#8B0000']
@@ -134,7 +135,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, norm=norm,
                     cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], yticklabels=False,
                     ax=ax, linewidths=1, linecolor='black',
-                    annot_kws={"size": 10})  # Increase font size for annotations
+                    annot_kws={"size": 6})  # Increase font size for annotations
         ax.xaxis.tick_top()
         ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=14, pad=35)
         ax.set_xlabel("Day of the Week", fontsize=12)
