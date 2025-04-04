@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
+import mysql.connector
+from mysql.connector import pooling
 
 st.set_page_config(
     page_title="Indoor Air Quality Dashboard",  # Title on browser tab
@@ -15,12 +17,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"            # Or 'collapsed'
 )
 
-
 # Database connection details
 host = "139.59.34.149"
 user = "neemdb"
 password = "(#&pxJ&p7JvhA7<B"
 database = "cabh_iaq_db"
+
+# Create a connection pool with a maximum of 5 connections
+db_pool = pooling.MySQLConnectionPool(
+    pool_name="mypool",
+    pool_size=5,  # Adjust based on load
+    host=host,
+    user=user,
+    password=password,
+    database=database
+)
+
 
 # Device Data Dictionary (deviceID, address, typology)
 device_data = {
@@ -202,14 +214,10 @@ if st.button("Generate Heatmaps"):
     if not device_id.strip():
         st.error("Device ID cannot be empty.")
         st.stop()
+
     try:
-        # Connect to the MySQL database
-        conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database
-        )
+        # Get a connection from the pool instead of creating a new one
+        conn = db_pool.get_connection()
         cursor = conn.cursor()
 
         # Query to fetch data
@@ -221,7 +229,7 @@ if st.button("Generate Heatmaps"):
         cursor.execute(query, (device_id, year, selected_month))
 
         rows = cursor.fetchall()
-        #st.success("Data fetched successfully.")
+
         if rows:
             # Process data
             df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc"])
@@ -229,22 +237,20 @@ if st.button("Generate Heatmaps"):
             df.set_index('datetime', inplace=True)
 
             st.success("Data fetched successfully.")
-            
+
+            # Generate heatmaps
             plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, selected_month)
-
-            # Generate heatmaps and statistics
-            # pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
-            # plot_and_display_feature_heatmaps(df, pollutants, year, month)
-
         else:
             st.warning("No data found for the given Device ID and selected month.")
 
     except mysql.connector.Error as e:
         st.error(f"Database error: {e}")
     except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
+        st.error(f"An unexpected error occurred: {e}")
     finally:
-        # Ensure the database connection is closed
-        if 'conn' in locals() and conn.is_connected():
+        # Ensure cursor and connection are closed (returned to the pool)
+        if 'cursor' in locals():
             cursor.close()
+        if 'conn' in locals() and conn.is_connected():
             conn.close()
+
