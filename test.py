@@ -143,7 +143,7 @@ st.markdown("""
             font-size: 36px;
             text-align: center;
             padding: 20px;
-            border-radius: 100px;
+            border-radius: 80px;
             border-bottom: 4px solid red;  /* Red underline */
         }
         .red-line {
