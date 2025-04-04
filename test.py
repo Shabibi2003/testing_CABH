@@ -156,7 +156,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         # cbar.ax.set_ylabel(f"{feature} Levels", fontsize=14)  # Label for the color bar
 
         # Display the heatmap in Streamlit
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width = False)
         plt.close()
 
 # Streamlit app UI
