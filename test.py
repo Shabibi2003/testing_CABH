@@ -161,7 +161,12 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
 
 # Streamlit app UI
 st.title("Indoor Air Quality Trends")
-
+st.set_page_config(
+    page_title="Indoor Air Quality Dashboard",  # Title on browser tab
+    page_icon="🌫️",                            # Emoji or image
+    layout="wide",                              # 'centered' or 'wide'
+    initial_sidebar_state="expanded"            # Or 'collapsed'
+)
 # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)
 
