@@ -229,14 +229,9 @@ if st.button("Generate Heatmaps"):
 
             st.success("Data fetched successfully.")
 
-            # Optimize heatmap generation by processing pollutants in parallel
-            from concurrent.futures import ThreadPoolExecutor
-
-            def generate_heatmap(feature):
+            # Generate heatmaps sequentially
+            for feature in pollutant_display_names.keys():
                 plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
-
-            with ThreadPoolExecutor() as executor:
-                executor.map(generate_heatmap, pollutant_display_names.keys())
 
         else:
             st.warning("No data found for the given Device ID and selected month.")
