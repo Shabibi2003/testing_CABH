@@ -9,10 +9,10 @@ import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
 st.set_page_config(
-    page_title="Indoor Air Quality Dashboard", 
-    page_icon="🌫️",                            
-    layout="centered",                              
-    initial_sidebar_state="collapsed"            # 'collapsed'
+    page_title="Indoor Air Quality Dashboard",  # Title on browser tab
+    page_icon="🌫️",                            # Emoji or image
+    layout="centered",                              # 'centered' or 'wide'
+    initial_sidebar_state="expanded"            # Or 'collapsed'
 )
 
 
@@ -97,8 +97,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
             continue
 
         # Initialize the figure for a single subplot (for a single month)
-        fig, ax = plt.subplots(figsize=(6, 3))
-        plt.tight_layout()
+        fig, ax = plt.subplots(figsize=(10, 6))
 
         # Define custom color map
         color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000', '#8B0000']
@@ -135,11 +134,11 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, norm=norm,
                     cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], yticklabels=False,
                     ax=ax, linewidths=1, linecolor='black',
-                    annot_kws={"size": 6})  # Increase font size for annotations
+                    annot_kws={"size": 14})  # Increase font size for annotations
         ax.xaxis.tick_top()
-        ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=6, pad=20)
-        ax.set_xlabel("Day of the Week", fontsize=6)
-        ax.set_ylabel("Week", fontsize=6)
+        ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=14, pad=35)
+        ax.set_xlabel("Day of the Week", fontsize=12)
+        ax.set_ylabel("Week", fontsize=12)
 
         ax.set_yticks([])
 
@@ -153,11 +152,11 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         # Set color bar ticks and labels
         cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
         cbar.set_ticklabels(labels)
-        cbar.ax.tick_params(labelsize=6)  # Adjust font size of color bar ticks
+        cbar.ax.tick_params(labelsize=12)  # Adjust font size of color bar ticks
         # cbar.ax.set_ylabel(f"{feature} Levels", fontsize=14)  # Label for the color bar
 
         # Display the heatmap in Streamlit
-        st.pyplot(fig, use_container_width = False)
+        st.pyplot(fig)
         plt.close()
 
 # Streamlit app UI
