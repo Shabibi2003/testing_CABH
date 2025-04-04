@@ -177,49 +177,49 @@ st.write(f"Typology: {device_info[1]}")
 # Button to generate heatmaps
 if st.button("Generate Heatmaps"):
     with st.spinner("Generating Heatmaps....please wait"):
-    if not device_id.strip():
-        st.error("Device ID cannot be empty.")
-        st.stop()
-    try:
+        if not device_id.strip():
+            st.error("Device ID cannot be empty.")
+            st.stop()
+        try:
         # Connect to the MySQL database
-        conn = mysql.connector.connect(
+            conn = mysql.connector.connect(
             host=host,
             user=user,
             password=password,
             database=database
         )
-        cursor = conn.cursor()
+            cursor = conn.cursor()
 
         # Query to fetch only required columns
-        query = """
-        SELECT datetime, pm25, pm10, aqi, co2, voc
-        FROM reading_db
-        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
-        """
-        cursor.execute(query, (device_id, year, selected_month))
-        rows = cursor.fetchall()
+            query = """
+            SELECT datetime, pm25, pm10, aqi, co2, voc
+            FROM reading_db
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
+            """
+            cursor.execute(query, (device_id, year, selected_month))
+            rows = cursor.fetchall()
 
-        if rows:
-            # Process data
-            df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc"])
-            df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-            df.set_index('datetime', inplace=True)
+            if rows:
+                # Process data
+                df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc"])
+                df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                df.set_index('datetime', inplace=True)
+    
+                st.success("Data fetched successfully.")
+    
+                # Generate heatmaps sequentially
+                for feature in pollutant_display_names.keys():
+                    plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
+    
+            else:
+                st.warning("No data found for the given Device ID and selected month.")
 
-            st.success("Data fetched successfully.")
-
-            # Generate heatmaps sequentially
-            for feature in pollutant_display_names.keys():
-                plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
-
-        else:
-            st.warning("No data found for the given Device ID and selected month.")
-
-    except mysql.connector.Error as e:
-        st.error(f"Database error: {e}")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
-    finally:
-        # Ensure the database connection is closed
-        if 'conn' in locals() and conn.is_connected():
-            cursor.close()
-            conn.close()
+        except mysql.connector.Error as e:
+            st.error(f"Database error: {e}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
+        finally:
+            # Ensure the database connection is closed
+            if 'conn' in locals() and conn.is_connected():
+                cursor.close()
+                conn.close()
