@@ -169,6 +169,10 @@ with col1:
 
 
 with col2:
+    year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
+
+
+with col3:
     months = {
         "January": 1, "February": 2, "March": 3, "April": 4,
         "May": 5, "June": 6, "July": 7, "August": 8,
@@ -177,9 +181,6 @@ with col2:
     month_name = st.selectbox("Select Month:", list(months.keys()), index=0)
     selected_month = months[month_name]  # You can use this as the number later
 
-
-with col3:
-    month = st.selectbox("Select Month:", list(range(1, 13)))
 
 # Get the address and typology for the entered device ID
 device_info = device_data.get(device_id, ("Not Available", "Not Available"))
