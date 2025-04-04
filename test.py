@@ -50,7 +50,7 @@ device_data = {
 }
 
 # Streamlit app
-st.title("CABH Indoor Air Quality Monitoring")
+# st.title("CABH Indoor Air Quality Monitoring")
 
 pollutant_display_names = {
     'aqi': 'AQI',
