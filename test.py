@@ -52,6 +52,13 @@ device_data = {
 # Streamlit app
 st.title("CABH Indoor Air Quality Monitoring")
 
+pollutant_display_names = {
+    'aqi': 'AQI',
+    'pm25': 'PM 2.5',
+    'pm10': 'PM 10',
+    'co2': 'CO₂',
+    'voc': 'VOC'
+}
 # Function to plot and display heatmaps for each feature (pollutant)
 def plot_and_display_feature_heatmaps(df, features, year, month):
     feature_boundaries = {
@@ -78,7 +85,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         feature_data = df[(df.index.year == year) & (df.index.month == month)][feature]
 
         if feature_data.empty:
-            st.warning(f"No data available for {feature} in {calendar.month_name[month]} {year}.")
+            st.warning(f"No data available for {pollutant_display_names.get(feature, feature)} in {calendar.month_name[month]} {year}.")
             continue
 
         # Initialize the figure for a single subplot (for a single month)
@@ -121,7 +128,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
                     ax=ax, linewidths=1, linecolor='black',
                     annot_kws={"size": 14})  # Increase font size for annotations
         ax.xaxis.tick_top()
-        ax.set_title(f"{calendar.month_name[month]} {year} - {indoor_feature}", fontsize=14)
+        ax.set_title(f"{calendar.month_name[month]} {year} - {pollutant_display_names.get(feature, feature)}", fontsize=14)
         ax.set_xlabel("Day of the Week", fontsize=12)
         ax.set_ylabel("Week", fontsize=12)
 
@@ -196,9 +203,10 @@ if st.button("Generate Heatmaps"):
             df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
             df.set_index('datetime', inplace=True)
 
+            plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, month)
             # Generate heatmaps and statistics
-            pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
-            plot_and_display_feature_heatmaps(df, pollutants, year, month)
+            # pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
+            # plot_and_display_feature_heatmaps(df, pollutants, year, month)
 
         else:
             st.warning("No data found for the given Device ID and selected month.")
