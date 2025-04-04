@@ -214,9 +214,9 @@ if st.button("Generate Heatmaps"):
 
         # Query to fetch data
         query = """
-            SELECT datetime, pm25, pm10, aqi, co2, voc
-            FROM reading_db
-            WHERE deviceID = %s AND datetime BETWEEN %s AND %s;
+        SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc
+        FROM reading_db
+        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
         """
         cursor.execute(query, (device_id, year, selected_month))
 
