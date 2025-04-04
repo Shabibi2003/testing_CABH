@@ -137,7 +137,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
                     annot_kws={"size": 14})  # Increase font size for annotations
         ax.xaxis.tick_top()
         ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=14, pad=35)
-        ax.set_xlabel(f"{month_name} {year} - Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=12)
+        ax.set_xlabel(f"{month_name} {year}", fontsize=12)
         ax.set_ylabel("Week", fontsize=12)
 
         ax.set_yticks([])
