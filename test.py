@@ -179,7 +179,7 @@ with col3:
         "September": 9, "October": 10, "November": 11, "December": 12
     }
     month_name = st.selectbox("Select Month:", list(month.keys()), index=0)
-    selected_month = months[month_name]  # You can use this as the number later
+    selected_month = month[month_name]  # You can use this as the number later
 
 
 # Get the address and typology for the entered device ID
