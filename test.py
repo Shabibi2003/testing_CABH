@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Indoor Air Quality Dashboard", 
     page_icon="🌫️",                            
     layout="wide",                              
-    initial_sidebar_state="expanded"            # Or 'collapsed'
+    initial_sidebar_state="collapsed"            # 'collapsed'
 )
 
 
@@ -97,7 +97,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
             continue
 
         # Initialize the figure for a single subplot (for a single month)
-        fig, ax = plt.subplots(figsize=(6, 3))
+        fig, ax = plt.subplots(figsize=(4, 3))
 
         # Define custom color map
         color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000', '#8B0000']
