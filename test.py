@@ -214,10 +214,11 @@ if st.button("Generate Heatmaps"):
 
         # Query to fetch data
         query = """
-        SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc, temp, humidity, battery, viral_index
-        FROM reading_db
-        WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
+            SELECT DateTime, co2, tvoc, pm2_5, pm10, temperature, humidity
+            FROM your_table
+            WHERE DateTime >= '2024-01-01'
         """
+
         cursor.execute(query, (device_id, year, selected_month))
 
         rows = cursor.fetchall()
