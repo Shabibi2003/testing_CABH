@@ -9,9 +9,9 @@ import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
 st.set_page_config(
-    page_title="Indoor Air Quality Dashboard",  # Title on browser tab
-    page_icon="🌫️",                            # Emoji or image
-    layout="wide",                              # 'centered' or 'wide'
+    page_title="Indoor Air Quality Dashboard", 
+    page_icon="🌫️",                            
+    layout="wide",                              
     initial_sidebar_state="expanded"            # Or 'collapsed'
 )
 
@@ -134,7 +134,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, norm=norm,
                     cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], yticklabels=False,
                     ax=ax, linewidths=1, linecolor='black',
-                    annot_kws={"size": 14})  # Increase font size for annotations
+                    annot_kws={"size": 10})  # Increase font size for annotations
         ax.xaxis.tick_top()
         ax.set_title(f"Daily Average - {pollutant_display_names.get(feature, feature)}", fontsize=14, pad=35)
         ax.set_xlabel("Day of the Week", fontsize=12)
