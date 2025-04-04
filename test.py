@@ -152,7 +152,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         plt.close()
 
 # Streamlit app UI
-st.title("CABH Indoor Air Quality Monitoring")
+st.title("Indoor Air Quality Trends")
 
 # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)
