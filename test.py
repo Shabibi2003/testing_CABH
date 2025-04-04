@@ -214,8 +214,8 @@ if st.button("Generate Heatmaps"):
 
         # Query to fetch data
         query = """
-            SELECT DateTime, co2, tvoc, pm2_5, pm10, temperature, humidity
-            FROM your_table
+             SELECT id, deviceID, datetime, pm25, pm10, aqi, co2, voc
+            FROM reading_db
             WHERE DateTime >= '2024-01-01'
         """
 
