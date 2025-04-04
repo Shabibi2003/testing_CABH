@@ -222,4 +222,3 @@ if st.button("Generate Heatmaps"):
         if 'conn' in locals() and conn.is_connected():
             cursor.close()
             conn.close()
-            st.info("Database connection closed.")
