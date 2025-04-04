@@ -210,7 +210,8 @@ if st.button("Generate Heatmaps"):
         FROM reading_db
         WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
         """
-        cursor.execute(query, (device_id, year, month))
+        cursor.execute(query, (device_id, year, selected_month))
+
         rows = cursor.fetchall()
         #st.success("Data fetched successfully.")
         if rows:
@@ -221,7 +222,8 @@ if st.button("Generate Heatmaps"):
 
             st.success("Data fetched successfully.")
             
-            plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, month)
+            plot_and_display_feature_heatmaps(df, pollutant_display_names.keys(), year, selected_month)
+
             # Generate heatmaps and statistics
             # pollutants = ['aqi', 'pm25', 'pm10', 'co2', 'voc']
             # plot_and_display_feature_heatmaps(df, pollutants, year, month)
