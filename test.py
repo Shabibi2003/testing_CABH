@@ -225,7 +225,7 @@ if st.button("Generate Heatmaps"):
         #st.success("Data fetched successfully.")
         if rows:
             # Process data
-            df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity", "battery", "viral_index"])
+            df = pd.DataFrame(rows, columns=["id", "deviceID", "datetime", "pm25", "pm10", "aqi", "co2", "voc"])
             df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
             df.set_index('datetime', inplace=True)
 
