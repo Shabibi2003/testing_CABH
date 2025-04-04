@@ -178,7 +178,7 @@ with col3:
         "May": 5, "June": 6, "July": 7, "August": 8,
         "September": 9, "October": 10, "November": 11, "December": 12
     }
-    month_name = st.selectbox("Select Month:", list(months.keys()), index=0)
+    month_name = st.selectbox("Select Month:", list(month.keys()), index=0)
     selected_month = months[month_name]  # You can use this as the number later
 
 
