@@ -117,13 +117,15 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         # Plot the heatmap for the selected feature
         norm = BoundaryNorm(boundaries, cmap.N)
         sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, norm=norm,
-                    cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 
+                    cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], yticklabels=False,
                     ax=ax, linewidths=1, linecolor='black',
                     annot_kws={"size": 14})  # Increase font size for annotations
         ax.xaxis.tick_top()
         ax.set_title(f"{calendar.month_name[month]} {year} - {indoor_feature}", fontsize=14)
         ax.set_xlabel("Day of the Week", fontsize=12)
         ax.set_ylabel("Week", fontsize=12)
+
+        ax.set_yticks([])
 
         # Create extra space for the color bar and adjust layout
         fig.subplots_adjust(right=0.85)  # Add more space to the right of the subplots
