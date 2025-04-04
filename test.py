@@ -136,9 +136,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         st.pyplot(fig)
         plt.close()
 
-# Streamlit app UI
-# st.title("Indoor Air Quality Trends")
-# Add custom CSS
+
 st.markdown("""
     <style>
         .title {
@@ -148,9 +146,13 @@ st.markdown("""
             border-radius: 10px;
             border-bottom: 4px solid red;  /* Red underline */
         }
+        .red-line {
+            border-top: 3px solid red;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
     </style>
 """, unsafe_allow_html=True)
-
 # Display the title with a red underline
 st.markdown('<h1 class="title">Indoor Air Quality Trends</h1>', unsafe_allow_html=True)
 
@@ -182,6 +184,8 @@ with col3:
     }
     month_name = st.selectbox("Select Month:", list(month.keys()), index=0)
     selected_month = month[month_name]  # You can use this as the number later
+    
+st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
 
 # Get the address and typology for the entered device ID
