@@ -176,6 +176,7 @@ st.write(f"Typology: {device_info[1]}")
 
 # Button to generate heatmaps
 if st.button("Generate Heatmaps"):
+    with st.spinner("Generating Heatmaps....please wait")
     if not device_id.strip():
         st.error("Device ID cannot be empty.")
         st.stop()
