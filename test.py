@@ -144,7 +144,7 @@ st.markdown("""
         .title {
             font-size: 36px;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
             border-bottom: 4px solid red;  /* Red underline */
         }
