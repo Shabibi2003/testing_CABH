@@ -76,7 +76,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         'pm10': [0, 20, 50, 100, 250, 350, 500],
         'co2': [0, 900, 10000],
         'voc': [0, 500, 1000],
-        'temp': [0, 21.5, 27.5, 35]
+        'temp': [0, 22, 27, 35]
     }
 
     feature_labels = {
