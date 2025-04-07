@@ -236,7 +236,6 @@ if st.button("Generate Heatmaps"):
                 df.set_index('datetime', inplace=True)
     
                 st.success("Data fetched successfully.")
-                st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
                 # Generate heatmaps sequentially
                 for feature in pollutant_display_names.keys():
@@ -250,6 +249,8 @@ if st.button("Generate Heatmaps"):
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
         finally:
+            st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
+
             # Ensure the database connection is closed
             if 'conn' in locals() and conn.is_connected():
                 cursor.close()
