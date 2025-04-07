@@ -67,7 +67,7 @@ pollutant_display_names = {
     'co2': 'CO₂',
     'voc': 'VOC',
     'temp': 'Temp.',
-    'humidity'" 'Humidity'
+    'humidity': 'Humidity'
 }
 # Function to plot and display heatmaps for each feature (pollutant)
 def plot_and_display_feature_heatmaps(df, features, year, month):
