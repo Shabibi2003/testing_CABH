@@ -253,3 +253,4 @@ if st.button("Generate Heatmaps"):
             if 'conn' in locals() and conn.is_connected():
                 cursor.close()
                 conn.close()
+        st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
