@@ -66,7 +66,8 @@ pollutant_display_names = {
     'pm10': 'PM 10',
     'co2': 'CO₂',
     'voc': 'VOC',
-    'temp': 'Temp.'
+    'temp': 'Temp.',
+    'humidity'" 'Humidity'
 }
 # Function to plot and display heatmaps for each feature (pollutant)
 def plot_and_display_feature_heatmaps(df, features, year, month):
@@ -76,7 +77,8 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         'pm10': [0, 20, 50, 100, 250, 350, 500],
         'co2': [0, 900, 10000],
         'voc': [0, 500, 1000],
-        'temp': [0, 18, 28, 35]
+        'temp': [0, 18, 28, 50],
+        'humidity': [0, 49, 70, 100]
     }
 
     feature_labels = {
@@ -85,7 +87,8 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         'pm10': ['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe'],
         'co2': ['Good', 'Poor'],
         'voc': ['Good', 'Poor'],
-        'temp': ['Low', 'Normal', 'High']
+        'temp': ['Low', 'Normal', 'High'],
+        'humidity': ['Low', 'Normal', 'High']
     }
 
     # Precompute the calendar grid for the selected month
@@ -219,7 +222,7 @@ if st.button("Generate Heatmaps"):
 
         # Query to fetch only required columns
             query = """
-            SELECT datetime, pm25, pm10, aqi, co2, voc, temp
+            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
             WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
@@ -228,7 +231,7 @@ if st.button("Generate Heatmaps"):
 
             if rows:
                 # Process data
-                df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp"])
+                df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 df.set_index('datetime', inplace=True)
     
