@@ -236,7 +236,8 @@ if st.button("Generate Heatmaps"):
                 df.set_index('datetime', inplace=True)
     
                 st.success("Data fetched successfully.")
-    
+                st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
+
                 # Generate heatmaps sequentially
                 for feature in pollutant_display_names.keys():
                     plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
@@ -253,4 +254,3 @@ if st.button("Generate Heatmaps"):
             if 'conn' in locals() and conn.is_connected():
                 cursor.close()
                 conn.close()
-        st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
