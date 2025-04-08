@@ -288,7 +288,6 @@ if st.button("Generate Charts"):
                 indoor_df.set_index('datetime', inplace=True)
                 indoor_df = indoor_df.resample('D').mean()  # Resample to daily averages
                 # indoor_df = indoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                indoor_df = indoor_df[(indoor_df != 0).any(axis=1)]  # Drop rows where any value is zero
 
                 # Process outdoor data
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "temp", "humidity"])
@@ -296,9 +295,9 @@ if st.button("Generate Charts"):
                 outdoor_df.set_index('datetime', inplace=True)
                 st.write("Outdoor data before filtering:", outdoor_df.shape)
                 cols_to_check = ["pm25", "pm10", "aqi", "temp", "humidity"]
+                outdoor_df = outdoor_df.resample('D').mean()  
                 outdoor_df = outdoor_df[(outdoor_df[cols_to_check] != 0).all(axis=1)]
 
-                outdoor_df = outdoor_df.resample('D').mean()  
                 st.write("Outdoor data after filtering:", outdoor_df.shape)
                 
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
