@@ -9,12 +9,11 @@ import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
 st.set_page_config(
-    page_title="Indoor Air Quality Dashboard",  # Title on browser tab
-    page_icon="🌫️",                            # Emoji or image
-    layout="centered",                              # 'centered' or 'wide'
-    initial_sidebar_state="expanded"            # Or 'collapsed'
+    page_title="Indoor Air Quality Dashboard",
+    page_icon="🌫️",
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
-
 
 # Database connection details
 host = "139.59.34.149"
@@ -57,8 +56,38 @@ device_data = {
     "1202240012": ("St. Mary's School, Dwarka Sec-19", "School"),
 }
 
-# Streamlit app
-# st.title("CABH Indoor Air Quality Monitoring")
+# Mapping of indoor device IDs to outdoor device IDs
+indoor_to_outdoor_mapping = {
+    "1202240026": "THIRD_DPCC_SCR_RKPURAM",
+    "1202240025": "THIRD_DPCC_SCR_RKPURAM",
+    "1203240081": "THIRD_DPCC_SCR_RKPURAM",
+    "1202240011": "DELCPCB010",
+    "1202240027": "DELCPCB010",
+    "1203240076": "DELCPCB010",
+    "1203240078": "DELCPCB010",
+    "1203240075": "DELCPCB010",
+    "1201240077": "DELDPCC016",
+    "1201240072": "DELDPCC016",
+    "1203240079": "DELDPCC006",
+    "1201240079": "DELDPCC006",
+    "1201240085": "DELDPCC006",
+    "1203240083": "THIRD_DPCC_SCR_RKPURAM",
+    "1203240073": "DELDPCC018",
+    "1203240074": "DELDPCC011",
+    "1201240076": "DELDPCC018",
+    "1212230160": "DELDPCC018",
+    "1202240009": "DELDPCC018",
+    "1202240008": "DELDPCC018",
+    "1201240073": "DELDPCC018",
+    "1203240080": "DELCPCB005",
+    "1201240074": "DELCPCB005",
+    "1203240077": "DELDPCC014",
+    "1203240082": "DELDPCC014",
+    "1202240029": "DELDPCC016",
+    "1202240028": "DELDPCC016",
+    "1202240010": "DELDPCC016",
+    "1202240012": "DELDPCC016",
+}
 
 pollutant_display_names = {
     'aqi': 'AQI',
@@ -69,8 +98,29 @@ pollutant_display_names = {
     'temp': 'Temp.',
     'humidity': 'Humidity'
 }
+
+# Function to plot and display line charts for pollutants
+def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names):
+    combined_df = pd.concat(
+        [indoor_df.add_suffix('_indoor'), outdoor_df.add_suffix('_outdoor')],
+        axis=1
+    )
+
+    for pollutant in pollutant_display_names.keys():
+        if f"{pollutant}_indoor" in combined_df.columns and f"{pollutant}_outdoor" in combined_df.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            combined_df[f"{pollutant}_indoor"].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Indoor)", color='blue')
+            combined_df[f"{pollutant}_outdoor"].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
+            ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor vs Outdoor", fontsize=14)
+            ax.set_xlabel("Date", fontsize=12)
+            ax.set_ylabel(pollutant_display_names[pollutant], fontsize=12)
+            ax.legend()
+            ax.grid(True)
+            st.pyplot(fig)
+            plt.close()
+
 # Function to plot and display heatmaps for each feature (pollutant)
-def plot_and_display_feature_heatmaps(df, features, year, month):
+def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
     feature_boundaries = {
         'aqi': [0, 50, 100, 150, 200, 300, 500],
         'pm25': [0, 12, 35, 55, 150, 250, 500],
@@ -97,7 +147,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
     calendar_data = np.full((5, 7), np.nan) 
 
     # Compute daily averages for all features at once
-    daily_averages = df.resample('D').mean()
+    daily_averages = indoor_df.resample('D').mean()
 
     for feature in features:
         if feature not in daily_averages.columns:
@@ -105,7 +155,7 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
             continue
 
         # Fill the calendar grid with daily averages
-        calendar_data.fill(np.nan)  # Reset the grid
+        calendar_data.fill(np.nan) 
         for day in range(1, num_days + 1):
             if day in daily_averages.index.day:
                 daily_avg = daily_averages.loc[daily_averages.index.day == day, feature].mean()
@@ -135,14 +185,13 @@ def plot_and_display_feature_heatmaps(df, features, year, month):
         fig.subplots_adjust(right=0.85)
         cbar_ax = fig.add_axes([0.87, 0.1, 0.03, 0.8])
         cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax, orientation='vertical')
-        cbar.set_ticks(boundaries)
-        cbar.set_ticklabels([str(b) for b in boundaries])
+        cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
+        cbar.set_ticklabels(labels)
         cbar.ax.tick_params(labelsize=12)
 
         st.pyplot(fig)
         plt.close()
-
-
+# Streamlit UI
 st.markdown("""
     <style>
         .title {
@@ -159,28 +208,18 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
-# Display the title with a red underline
-st.markdown('<h1 class="title">Indoor Air Quality Trends</h1>', unsafe_allow_html=True)
 
+st.markdown('<h1 class="title">Indoor & Outdoor Air Quality Trends</h1>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Create columns for user inputs (deviceID, year, month)
-col1, col2, col3 = st.columns(3)
-
+col1, col2, col3 = st.columns(3)    
 with col1:
-    device_id_list = [
-        "1201240075", "1203240078", "1201240078", "1202240026", "1202240025", "1203240081", "1202240011",
-        "1202240027", "1203240076", "1203240078", "1203240075", "1201240077", "1201240072", "1203240079",
-        "1201240079", "1201240085", "1203240083", "1203240073", "1203240074", "1201240076", "1212230160",
-        "1202240009", "1202240008", "1201240073", "1203240080", "1201240074", "1203240077", "1203240082",
-        "1202240029", "1202240028", "1202240010", "1202240012"
-    ]
-    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=device_id_list.index("1202240008"))
-
+    device_id_list = list(device_data.keys())
+    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=0)
 
 with col2:
     year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
-
 
 with col3:
     month = {
@@ -189,10 +228,9 @@ with col3:
         "September": 9, "October": 10, "November": 11, "December": 12
     }
     month_name = st.selectbox("Select Month:", list(month.keys()), index=0)
-    selected_month = month[month_name]  
-    
-st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
+    selected_month = month[month_name]
 
+st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
 # Get the address and typology for the entered device ID
 device_info = device_data.get(device_id, ("Not Available", "Not Available"))
@@ -203,51 +241,75 @@ st.write(f"Typology: {device_info[1]}")
 
 st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
-
-# Button to generate heatmaps
-if st.button("Generate Heatmaps"):
-    with st.spinner("Generating Heatmaps....please wait"):
+# Button to generate line charts
+if st.button("Generate Charts"):
+    with st.spinner("Generating Charts...please wait"):
         if not device_id.strip():
             st.error("Device ID cannot be empty.")
             st.stop()
         try:
-        # Connect to the MySQL database
+            # Connect to the MySQL database
             conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database
-        )
+                host=host,
+                user=user,
+                password=password,
+                database=database
+            )
             cursor = conn.cursor()
 
-        # Query to fetch only required columns
-            query = """
+            # Get the corresponding outdoor device ID
+            outdoor_device_id = indoor_to_outdoor_mapping.get(device_id)
+            if not outdoor_device_id:
+                st.error(f"No outdoor device mapping found for indoor device ID {device_id}.")
+                st.stop()
+
+            # Query to fetch indoor data
+            indoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
             WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
-            cursor.execute(query, (device_id, year, selected_month))
-            rows = cursor.fetchall()
+            cursor.execute(indoor_query, (device_id, year, selected_month))
+            indoor_rows = cursor.fetchall()
 
-            if rows:
-                # Process data
-                df = pd.DataFrame(rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                df['datetime'] = pd.to_datetime(df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                df.set_index('datetime', inplace=True)
-    
-                st.success("Data fetched successfully.")
+            # Query to fetch outdoor data
+            outdoor_query = """
+            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+            FROM cpcb_data
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
+            """
+            cursor.execute(outdoor_query, (outdoor_device_id, year, selected_month))
+            outdoor_rows = cursor.fetchall()
 
-                # Generate heatmaps sequentially
-                for feature in pollutant_display_names.keys():
-                    plot_and_display_feature_heatmaps(df, [feature], year, selected_month)
-    
+            if indoor_rows and outdoor_rows:
+                # Process indoor data
+                indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                indoor_df.set_index('datetime', inplace=True)
+                indoor_df = indoor_df.resample('D').mean()  # Resample to daily averages
+
+                # Process outdoor data
+                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                outdoor_df.set_index('datetime', inplace=True)
+                outdoor_df = outdoor_df.resample('D').mean()  
+
+                features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
+                plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
+                
+                st.markdown("<br>", unsafe_allow_html= True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html = True)
+
+                plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+
             else:
                 st.warning("No data found for the given Device ID and selected month.")
 
         except mysql.connector.Error as e:
             st.error(f"Database error: {e}")
         except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")  # Handle unexpected errors
+            st.error(f"An unexpected error occurred: {e}")
         finally:
             st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
