@@ -216,7 +216,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)    
 with col1:
     device_id_list = list(device_data.keys())
-    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=0, value=1202240008)
+    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=0)
 
 with col2:
     year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
