@@ -292,7 +292,7 @@ if st.button("Generate Charts"):
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
-                
+                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
                 outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
                 st.download_button(
                     label="📥 Download Outdoor Data with Datetime",
@@ -302,8 +302,8 @@ if st.button("Generate Charts"):
                 )
                   # Resample to daily averages
                 # outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
                 outdoor_df = outdoor_df.resample('D').mean()
+                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
 
                 outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
                 st.download_button(
