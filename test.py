@@ -182,6 +182,7 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         ax.set_yticks([])
 
         # Add color bar
+        # Add color bar
         fig.subplots_adjust(right=0.85)
         cbar_ax = fig.add_axes([0.87, 0.1, 0.03, 0.8])
         cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax, orientation='vertical')
@@ -192,9 +193,15 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         cbar.set_ticklabels(labels)
         
         # Set ticks for boundary values (at the ends of the color bar)
-        cbar.ax.hlines(boundaries, *cbar_ax.get_xlim(), color='black', linewidth=1)  # Add boundary lines
         cbar.ax.set_yticks(boundaries)
         cbar.ax.set_yticklabels([str(b) for b in boundaries], fontsize=10, rotation=0)
+        
+        # Draw horizontal lines at the boundaries for better visibility
+        for boundary in boundaries:
+            cbar.ax.hlines(boundary, *cbar_ax.get_xlim(), color='black', linewidth=1)
+        
+        # Adjust label size and alignment
+        cbar.ax.tick_params(labelsize=12)
         
         # Adjust label size and alignment
         cbar.ax.tick_params(labelsize=12)
