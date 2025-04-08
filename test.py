@@ -297,7 +297,7 @@ if st.button("Generate Charts"):
                 
                 outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
                 st.download_button(
-                    label="📥 Download Outdoor Data as CSV",
+                    label="📥 Download Outdoor Data with Datetime",
                     data=outdoor_csv,
                     file_name='outdoor_data.csv',
                     mime='text/csv'
@@ -308,7 +308,7 @@ if st.button("Generate Charts"):
 
                 outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
                 st.download_button(
-                    label="📥 Download Outdoor Data as CSV",
+                    label="📥 Download Outdoor Daily Average Data",
                     data=outdoor_csv,
                     file_name='outdoor_mean_data.csv',
                     mime='text/csv'
