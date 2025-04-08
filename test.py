@@ -185,8 +185,8 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         fig.subplots_adjust(right=0.85)
         cbar_ax = fig.add_axes([0.87, 0.1, 0.03, 0.8])
         cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax, orientation='vertical')
-        cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
-        cbar.set_ticklabels(labels)
+        cbar.set_ticks(boundaries)
+        cbar.set_ticklabels([str(b) for b in boundaries])
         cbar.ax.tick_params(labelsize=12)
 
         st.pyplot(fig)
@@ -216,7 +216,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)    
 with col1:
     device_id_list = list(device_data.keys())
-    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=0)
+    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=0, value=1202240008)
 
 with col2:
     year = st.number_input("Select Year:", min_value=2024, max_value=2025, value=2024)
