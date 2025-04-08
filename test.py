@@ -306,6 +306,13 @@ if st.button("Generate Charts"):
                 outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
                 outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
 
+                outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
+                st.download_button(
+                    label="📥 Download Outdoor Data as CSV",
+                    data=outdoor_csv,
+                    file_name='outdoor_mean_data.csv',
+                    mime='text/csv'
+                )
                 # Align indoor and outdoor data to ensure proper mapping
                 indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
 
