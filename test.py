@@ -294,10 +294,11 @@ if st.button("Generate Charts"):
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
-                outdoor_df = outdoor_df.resample('D').mean()  # Resample to daily averages
-                # outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                outdoor_df = outdoor_df[(outdoor_df != 0).any(axis=1)]  # Drop rows where any value is zero
-
+                st.write("Outdoor data before filtering:", outdoor_df.shape)
+                outdoor_df = outdoor_df[(outdoor_df != 0).any(axis=1)]
+                outdoor_df = outdoor_df.resample('D').mean()  
+                st.write("Outdoor data before filtering:", outdoor_df.shape)
+                
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
                 
