@@ -298,9 +298,6 @@ if st.button("Generate Charts"):
                 outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
                 outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
 
-                # Align indoor and outdoor data to ensure overlapping indices
-                indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
-
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
                 
