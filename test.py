@@ -175,7 +175,7 @@ with col1:
         "1202240009", "1202240008", "1201240073", "1203240080", "1201240074", "1203240077", "1203240082",
         "1202240029", "1202240028", "1202240010", "1202240012"
     ]
-    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=device_id_list.index("1202240012"))
+    device_id = st.selectbox("Select Device ID:", options=sorted(device_id_list), index=device_id_list.index("1202240008"))
 
 
 with col2:
@@ -189,7 +189,7 @@ with col3:
         "September": 9, "October": 10, "November": 11, "December": 12
     }
     month_name = st.selectbox("Select Month:", list(month.keys()), index=0)
-    selected_month = month[month_name]  # You can use this as the number later
+    selected_month = month[month_name]  
     
 st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
