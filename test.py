@@ -313,7 +313,7 @@ if st.button("Generate Charts"):
                     mime='text/csv'
                 )
                 # Align indoor and outdoor data to ensure proper mapping
-                indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
+                # indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
 
                 
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
