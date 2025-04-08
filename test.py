@@ -274,7 +274,7 @@ if st.button("Generate Charts"):
 
             # Query to fetch outdoor data
             outdoor_query = """
-            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+            SELECT datetime, pm25, pm10, aqi, temp, humidity
             FROM cpcb_data
             WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
@@ -291,7 +291,7 @@ if st.button("Generate Charts"):
                 indoor_df = indoor_df[(indoor_df != 0).any(axis=1)]  # Drop rows where any value is zero
 
                 # Process outdoor data
-                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
                 st.write("Outdoor data before filtering:", outdoor_df.shape)
