@@ -182,14 +182,13 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         ax.set_yticks([])
 
         # Add color bar
-        # Add color bar
         fig.subplots_adjust(right=0.85)
         cbar_ax = fig.add_axes([0.87, 0.1, 0.03, 0.8])
         cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax, orientation='vertical')
         
         # Set ticks for labels (center of each color segment)
-        cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
-        cbar.set_ticklabels(labels)
+        cbar.ax.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
+        cbar.ax.set_ticklabels(labels)
         
         # Set ticks for boundary values (at the ends of the color bar)
         cbar.ax.set_yticks(boundaries)
