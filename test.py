@@ -297,7 +297,7 @@ if st.button("Generate Charts"):
                 st.write("Outdoor data before filtering:", outdoor_df.shape)
                 outdoor_df = outdoor_df[(outdoor_df != 0).any(axis=1)]
                 outdoor_df = outdoor_df.resample('D').mean()  
-                st.write("Outdoor data before filtering:", outdoor_df.shape)
+                st.write("Outdoor data after filtering:", outdoor_df.shape)
                 
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
