@@ -295,7 +295,9 @@ if st.button("Generate Charts"):
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
                 st.write("Outdoor data before filtering:", outdoor_df.shape)
-                outdoor_df = outdoor_df[(outdoor_df != 0).any(axis=1)]
+                cols_to_check = ["pm25", "pm10", "aqi", "temp", "humidity"]
+                outdoor_df = outdoor_df[(outdoor_df[cols_to_check] != 0).all(axis=1)]
+
                 outdoor_df = outdoor_df.resample('D').mean()  
                 st.write("Outdoor data after filtering:", outdoor_df.shape)
                 
