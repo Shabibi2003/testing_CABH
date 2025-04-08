@@ -301,6 +301,23 @@ if st.button("Generate Charts"):
                 # Align indoor and outdoor data to ensure proper mapping
                 indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
 
+                indoor_csv = indoor_df.to_csv().encode('utf-8')
+                outdoor_csv = outdoor_df.to_csv().encode('utf-8')
+                
+                # Download buttons
+                st.download_button(
+                    label="📥 Download Indoor Data as CSV",
+                    data=indoor_csv,
+                    file_name='indoor_data.csv',
+                    mime='text/csv'
+                )
+                
+                st.download_button(
+                    label="📥 Download Outdoor Data as CSV",
+                    data=outdoor_csv,
+                    file_name='outdoor_data.csv',
+                    mime='text/csv'
+                )
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
                 
