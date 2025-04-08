@@ -284,17 +284,17 @@ if st.button("Generate Charts"):
             if indoor_rows and outdoor_rows:
                 # Process indoor data
                 indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                indoor_df = indoor_df[(indoor_df != 0).all(axis=1)]
                 indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df.set_index('datetime', inplace=True)
                 indoor_df = indoor_df.resample('D').mean()  # Resample to daily averages
+                indoor_df = indoor_df[(indoor_df != 0).all(axis=1)]
 
                 # Process outdoor data
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
                 outdoor_df = outdoor_df.resample('D').mean()  
+                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
 
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
