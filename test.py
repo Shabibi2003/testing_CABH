@@ -302,9 +302,10 @@ if st.button("Generate Charts"):
                     file_name='outdoor_data.csv',
                     mime='text/csv'
                 )
-                outdoor_df = outdoor_df.resample('D').mean()  # Resample to daily averages
-                outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
+                  # Resample to daily averages
+                # outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
                 outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
+                outdoor_df = outdoor_df.resample('D').mean()
 
                 outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
                 st.download_button(
