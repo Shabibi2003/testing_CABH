@@ -274,7 +274,7 @@ if st.button("Generate Charts"):
 
             # Query to fetch outdoor data
             outdoor_query = """
-            SELECT datetime, pm25, pm10, aqi, temp, humidity
+            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM cpcb_data
             WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
@@ -283,36 +283,39 @@ if st.button("Generate Charts"):
 
             if indoor_rows and outdoor_rows:
                 # Process indoor data
+                import pandas as pd
+
                 indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df.set_index('datetime', inplace=True)
-                indoor_df = indoor_df.resample('D').mean()  # Resample to daily averages
-                indoor_df = indoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                indoor_df = indoor_df[(indoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
-
+                
+                # Filter indoor data: Remove rows with zero in specific columns before resampling
+                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
+                indoor_df = indoor_df[(indoor_df[columns_to_check_indoor] != 0).all(axis=1)]
+                
+                # Now resample to daily averages after filtering out zero values
+                indoor_df = indoor_df.resample('D').mean()
+                
                 # Process outdoor data
-                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "temp", "humidity"])
+                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
-                outdoor_df = outdoor_df.resample('D').mean()  # Resample to daily averages
-                outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
+                
+                # Filter outdoor data: Remove rows with zero in specific columns before resampling
+                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
+                outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
+                
+                # Now resample to daily averages after filtering out zero values
+                outdoor_df = outdoor_df.resample('D').mean()
 
-                # Align indoor and outdoor data to ensure proper mapping
-                indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
+                features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
+                plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
+                
+                st.markdown("<br>", unsafe_allow_html= True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html = True)
 
-                # Check if aligned dataframes are non-empty
-                if indoor_df.empty or outdoor_df.empty:
-                    st.warning("No overlapping data found between indoor and outdoor datasets for the selected period.")
-                else:
-                    features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
-                    plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
-
-                    plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+                plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
