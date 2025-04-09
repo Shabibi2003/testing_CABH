@@ -222,40 +222,81 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
-    # Define seasonal ranges
-    seasons = {
-        "Spring": [2, 3, 4],  # February, March, April
-        "Summer": [5, 6, 7],  # May, June, July
-        "Autumn": [8, 9, 10], # August, September, October
-        "Winter": [11, 12, 1] # November, December, January
-    }
+    # Connect to the database to fetch yearly data
+    try:
+        conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
+        cursor = conn.cursor()
 
-    # Filter data for the specified year and the previous December for Winter
-    indoor_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
+        # Query to fetch yearly data for the indoor device
+        yearly_query = """
+        SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+        FROM reading_db
+        WHERE deviceID = %s AND YEAR(datetime) = %s;
+        """
+        cursor.execute(yearly_query, (device_id, year))
+        yearly_rows = cursor.fetchall()
 
-    # Create a line chart for each season
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for season, months in seasons.items():
-        seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
-        if not seasonal_data.empty:
-            seasonal_data = seasonal_data.resample('D').mean()  # Ensure daily resampling for consistent plotting
-            ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
-        else:
-            # Add a placeholder line for missing data
-            ax.plot([], [], label=f"{season} (No Data)")
+        if not yearly_rows:
+            st.warning(f"No yearly data found for Device ID {device_id} in {year}.")
+            return
 
-    # Set chart title and labels
-    ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
-    ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
-    ax.legend(title="Season")
-    ax.grid(True)
+        # Create a DataFrame for yearly data
+        yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+        yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+        yearly_df.set_index('datetime', inplace=True)
 
-    # Ensure the x-axis shows the full date range
-    ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
+        # Filter out rows with zero values in the pollutant column
+        yearly_df = yearly_df[yearly_df[pollutant] != 0]
 
-    st.pyplot(fig)
-    plt.close()
+        # Define seasonal ranges
+        seasons = {
+            "Spring": [2, 3, 4],  # February, March, April
+            "Summer": [5, 6, 7],  # May, June, July
+            "Autumn": [8, 9, 10], # August, September, October
+            "Winter": [11, 12, 1] # November, December, January
+        }
+
+        # Filter data for the specified year and the previous December for Winter
+        yearly_df = yearly_df[(yearly_df.index.year == year) | ((yearly_df.index.year == year - 1) & (yearly_df.index.month == 12))]
+
+        # Create a line chart for each season
+        fig, ax = plt.subplots(figsize=(10, 6))
+        for season, months in seasons.items():
+            seasonal_data = yearly_df[yearly_df.index.month.isin(months)]
+            if not seasonal_data.empty:
+                seasonal_data = seasonal_data.resample('D').mean()  # Ensure daily resampling for consistent plotting
+                ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+            else:
+                # Add a placeholder line for missing data
+                ax.plot([], [], label=f"{season} (No Data)")
+
+        # Set chart title and labels
+        ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+        ax.set_xlabel("Date", fontsize=12)
+        ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+        ax.legend(title="Season")
+        ax.grid(True)
+
+        # Ensure the x-axis shows the full date range
+        ax.set_xlim(yearly_df.index.min(), yearly_df.index.max())
+
+        st.pyplot(fig)
+        plt.close()
+
+    except mysql.connector.Error as e:
+        st.error(f"Database error while fetching yearly data: {e}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+    finally:
+        # Ensure the database connection is closed
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 # Streamlit UI
 st.markdown("""
