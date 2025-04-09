@@ -192,12 +192,12 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         st.pyplot(fig)
         plt.close()
 
-# Function to plot line charts with indoor data on x-axis and outdoor data on y-axis
-def plot_indoor_vs_outdoor(indoor_df, outdoor_df, pollutants):
+# Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
+def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
     for pollutant in pollutants:
         if pollutant in indoor_df.columns and pollutant in outdoor_df.columns:
             fig, ax = plt.subplots(figsize=(8, 6))
-            ax.plot(indoor_df[pollutant], outdoor_df[pollutant], marker='o', linestyle='-', color='purple')
+            ax.scatter(indoor_df[pollutant], outdoor_df[pollutant], color='purple', alpha=0.7)
             ax.set_title(f"Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
@@ -344,11 +344,11 @@ if st.button("Generate Charts"):
 
                 plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
 
-                # Plot indoor vs outdoor for specific pollutants
+                # Plot indoor vs outdoor scatter plots for specific pollutants
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Line Charts</h3>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
+                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
