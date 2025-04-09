@@ -211,10 +211,10 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
             
-            # Optional: Add a 45-degree line (if you're expecting a direct correlation)
-            ax.plot([data[pollutant + '_x'].min(), data[pollutant + '_x'].max()],
-                    [data[pollutant + '_x'].min(), data[pollutant + '_x'].max()],
-                    color='red', linestyle='--', lw=2)  # Optional line
+            # # Optional: Add a 45-degree line (if you're expecting a direct correlation)
+            # ax.plot([data[pollutant + '_x'].min(), data[pollutant + '_x'].max()],
+            #         [data[pollutant + '_x'].min(), data[pollutant + '_x'].max()],
+            #         color='red', linestyle='--', lw=2)  # Optional line
             
             ax.grid(True)
             st.pyplot(fig)
