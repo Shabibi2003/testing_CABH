@@ -240,6 +240,9 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
         if not seasonal_data.empty:
             seasonal_data = seasonal_data.resample('D').mean()  # Ensure daily resampling for consistent plotting
             ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+        else:
+            # Add a placeholder line for missing data
+            ax.plot([], [], label=f"{season} (No Data)")
 
     # Set chart title and labels
     ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
