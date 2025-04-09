@@ -230,8 +230,8 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
         "Winter": [11, 12, 1] # November, December, January
     }
 
-    # Filter data for the specified year
-    indoor_df = indoor_df[indoor_df.index.year == year]
+    # Filter data for the specified year and the previous December for Winter
+    indoor_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
 
     # Create a line chart for each season
     fig, ax = plt.subplots(figsize=(10, 6))
