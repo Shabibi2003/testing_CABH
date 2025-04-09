@@ -227,10 +227,10 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
 
     # Define seasonal ranges
     seasons = {
-        "Spring": [2, 3, 4],  # February, March, April
-        "Summer": [5, 6, 7],  # May, June, July
-        "Autumn": [8, 9, 10], # August, September, October
-        "Winter": [11, 12, 1] # November, December, January
+        "Spring": [3, 4, 5],  # February, March, April
+        "Summer": [6, 7, 8],  # May, June, July
+        "Autumn": [9, 10, 11], # August, September, October
+        "Winter": [12, 1, 2] # November, December, January
     }
 
     # Filter data for the specified year and the previous December for Winter
