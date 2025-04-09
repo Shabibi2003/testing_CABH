@@ -220,6 +220,35 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
             st.pyplot(fig)
             plt.close()
 
+# Function to plot yearly data for residential buildings divided into seasons
+def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
+    # Define seasonal ranges
+    seasons = {
+        "Spring": [2, 3, 4],  # February, March, April
+        "Summer": [5, 6, 7],  # May, June, July
+        "Autumn": [8, 9, 10], # August, September, October
+        "Winter": [11, 12, 1] # November, December, January
+    }
+
+    # Filter data for the specified year
+    indoor_df = indoor_df[indoor_df.index.year == year]
+
+    # Create a line chart for each season
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for season, months in seasons.items():
+        seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
+        if not seasonal_data.empty:
+            seasonal_data[pollutant].plot(ax=ax, label=season)
+
+    # Set chart title and labels
+    ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+    ax.set_xlabel("Date", fontsize=12)
+    ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+    ax.legend(title="Season")
+    ax.grid(True)
+    st.pyplot(fig)
+    plt.close()
+
 # Streamlit UI
 st.markdown("""
     <style>
@@ -364,6 +393,14 @@ if st.button("Generate Charts"):
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
                 plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
+
+                # Filter residential building IDs
+                residential_ids = [device_id for device_id, (_, typology) in device_data.items() if "Residential" in typology]
+                if device_id in residential_ids:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    plot_residential_seasonal_line_chart(indoor_df, "aqi", year)  # Example for AQI
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
