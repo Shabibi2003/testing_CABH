@@ -308,6 +308,14 @@ if st.button("Generate Charts"):
                 # Now resample to daily averages after filtering out zero values
                 outdoor_df = outdoor_df.resample('D').mean()
 
+                outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
+                st.download_button(
+                    label="📥 Download Outdoor Data with Datetime",
+                    data=outdoor_csv,
+                    file_name='outdoor_data.csv',
+                    mime='text/csv'
+                )
+                
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
                 
