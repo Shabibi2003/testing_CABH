@@ -358,6 +358,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html = True)
 
                 plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants)
 
                 # Plot indoor vs outdoor scatter plots for specific pollutants
                 st.markdown("<br>", unsafe_allow_html=True)
