@@ -286,44 +286,33 @@ if st.button("Generate Charts"):
                 indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df.set_index('datetime', inplace=True)
-                indoor_df = indoor_df.resample('D').mean()  # Drop rows where any value is zero
+                indoor_df = indoor_df.resample('D').mean()  # Resample to daily averages
+                indoor_df = indoor_df.dropna(how='all')  # Drop rows where all values are NaN
+                indoor_df = indoor_df[(indoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
 
                 # Process outdoor data
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
-                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
-                outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
-                st.download_button(
-                    label="📥 Download Outdoor Data with Datetime",
-                    data=outdoor_csv,
-                    file_name='outdoor_data.csv',
-                    mime='text/csv'
-                )
-                  # Resample to daily averages
-                # outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
-                outdoor_df = outdoor_df.resample('D').mean()
-                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]
+                outdoor_df = outdoor_df.resample('D').mean()  # Resample to daily averages
+                outdoor_df = outdoor_df.dropna(how='all')  # Drop rows where all values are NaN
+                outdoor_df = outdoor_df[(outdoor_df != 0).all(axis=1)]  # Drop rows where any value is zero
 
-                outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
-                st.download_button(
-                    label="📥 Download Outdoor Daily Average Data",
-                    data=outdoor_csv,
-                    file_name='outdoor_mean_data.csv',
-                    mime='text/csv'
-                )
                 # Align indoor and outdoor data to ensure proper mapping
-                # indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
+                indoor_df, outdoor_df = indoor_df.align(outdoor_df, join='inner')
 
-                
-                features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
-                plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)
+                # Check if aligned dataframes are non-empty
+                if indoor_df.empty or outdoor_df.empty:
+                    st.warning("No overlapping data found between indoor and outdoor datasets for the selected period.")
+                else:
+                    features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
+                    plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
 
-                plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+                    plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
