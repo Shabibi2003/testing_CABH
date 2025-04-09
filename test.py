@@ -246,6 +246,10 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
     ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
     ax.legend(title="Season")
     ax.grid(True)
+
+    # Ensure the x-axis shows the full date range
+    ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
+
     st.pyplot(fig)
     plt.close()
 
