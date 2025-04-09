@@ -305,6 +305,13 @@ if st.button("Generate Charts"):
                 columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
                 outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
                 
+                outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
+                st.download_button(
+                    label="📥 Download Outdoor Data with Datetime",
+                    data=outdoor_csv,
+                    file_name='outdoor_mean_data.csv',
+                    mime='text/csv'
+                )
                 # Now resample to daily averages after filtering out zero values
                 outdoor_df = outdoor_df.resample('D').mean()
 
