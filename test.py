@@ -258,9 +258,13 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
         # Create a line chart for each season
         fig, ax = plt.subplots(figsize=(10, 6))
         for season, months in seasons.items():
-            seasonal_data = yearly_df[yearly_df.index.month.isin(months)]
+            seasonal_data = yearly_df[yearly_df.index.month.isin(months)].copy()
             if not seasonal_data.empty:
-                seasonal_data = seasonal_data.resample('D').mean()  # Ensure daily resampling for consistent plotting
+                # Reset index to avoid duplicate index issues during resampling
+                seasonal_data.reset_index(inplace=True)
+                seasonal_data.set_index('datetime', inplace=True)
+                # Resample data to daily frequency and calculate mean
+                seasonal_data = seasonal_data.resample('D').mean()
                 ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
             else:
                 # Add a placeholder line for missing data
@@ -274,7 +278,8 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
         ax.grid(True)
 
         # Ensure the x-axis shows the full date range
-        ax.set_xlim(yearly_df.index.min(), yearly_df.index.max())
+        if not yearly_df.empty:
+            ax.set_xlim(yearly_df.index.min(), yearly_df.index.max())
 
         st.pyplot(fig)
         plt.close()
