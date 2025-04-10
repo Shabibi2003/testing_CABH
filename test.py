@@ -56,6 +56,13 @@ device_data = {
     "1202240012": ("St. Mary's School, Dwarka Sec-19", "School"),
 }
 
+# List of residential device IDs
+residential_ids = [
+    "1203240075", "1201240077", "1201240072", "1203240079", "1201240079",
+    "1201240085", "1203240083", "1203240073", "1203240074", "1201240076",
+    "1212230160", "1201240073", "1203240080", "1201240074"
+]
+
 # Mapping of indoor device IDs to outdoor device IDs
 indoor_to_outdoor_mapping = {
     "1202240026": "THIRD_DPCC_SCR_RKPURAM",
@@ -433,8 +440,12 @@ if st.button("Generate Charts"):
                 cursor.close()
                 conn.close()
 
-# Filter indoor_df for the selected month
-monthly_indoor_df = indoor_df[indoor_df.index.month == selected_month]
+# Ensure indoor_df is defined and not empty before filtering
+if 'indoor_df' in locals() and not indoor_df.empty:
+    monthly_indoor_df = indoor_df[indoor_df.index.month == selected_month]
+else:
+    st.warning("No indoor data available for the selected month.")
+    monthly_indoor_df = pd.DataFrame()  # Create an empty DataFrame as a fallback
 
 # Call the seasonal line chart function with the full indoor_df
 if device_id in residential_ids:
