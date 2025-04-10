@@ -255,7 +255,7 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
     ax.grid(True)
 
         
-    ax.set_xlim(yearly_df.index.min(), yearly_df.index.max())
+    ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
 
     st.pyplot(fig)
     plt.close()
