@@ -377,72 +377,50 @@ if st.button("Generate Charts"):
                 st.stop()
 
             # Query to fetch all indoor data
+            # ... existing code ...
+
+            # Query to fetch indoor data for selected month
             indoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
-            WHERE deviceID = %s AND DateTime >= '2024-01-01';
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
             """
-            cursor.execute(indoor_query, (device_id,))
+            cursor.execute(indoor_query, (device_id, year, selected_month))
             indoor_rows = cursor.fetchall()
 
-            # Query to fetch all outdoor data
+            # Query to fetch outdoor data for selected month
             outdoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM cpcb_data
-            WHERE deviceID = %s AND DateTime >= '2024-01-01';
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
             """
-            cursor.execute(outdoor_query, (outdoor_device_id,))
+            cursor.execute(outdoor_query, (outdoor_device_id, year, selected_month))
             outdoor_rows = cursor.fetchall()
 
-            if indoor_rows:
-                # Process indoor data
-                indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                indoor_df.set_index('datetime', inplace=True)
+# ... existing code ...
 
-                # Filter indoor data: Remove rows with zero in specific columns
-                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']
-                indoor_df = indoor_df[(indoor_df[columns_to_check_indoor] != 0).all(axis=1)]
+                # Generate the seasonal line chart for the entire year
+            if device_id in residential_ids:
+                    # New query to fetch all data for residential yearly plot
+                    yearly_query = """
+                    SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+                    FROM reading_db
+                    WHERE deviceID = %s;
+                    """
+                    cursor.execute(yearly_query, (device_id,))
+                    yearly_rows = cursor.fetchall()
+                    
+                    if yearly_rows:
+                        yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                        yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                        yearly_df.set_index('datetime', inplace=True)
+                        
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        plot_residential_seasonal_line_chart(yearly_df, "aqi", year)
 
-                # Create a filtered version of indoor_df for the selected month
-                filtered_indoor_df = indoor_df[(indoor_df.index.year == year) & (indoor_df.index.month == selected_month)]
-
-                if outdoor_rows:
-                    # Process outdoor data
-                    outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                    outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                    outdoor_df.set_index('datetime', inplace=True)
-
-                    # Filter outdoor data: Remove rows with zero in specific columns
-                    columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']
-                    outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
-
-                    # Resample outdoor data to daily averages
-                    outdoor_df = outdoor_df.resample('D').mean()
-                else:
-                    outdoor_df = pd.DataFrame()  # Empty DataFrame if no outdoor data found
-
-                # Generate heatmaps and line charts for the selected month
-                if not filtered_indoor_df.empty:
-                    features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
-                    plot_and_display_feature_heatmaps(filtered_indoor_df, features, year, selected_month)
-
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
-
-                    if not outdoor_df.empty:
-                        plot_and_display_line_charts(filtered_indoor_df, outdoor_df, pollutant_display_names)
-                        plot_indoor_vs_outdoor_scatter(filtered_indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
-                else:
-                    st.warning("No data found for the selected month.")
-
-                # Generate the seasonal line chart for the entire year using the full indoor_df
-                if device_id in residential_ids:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    plot_residential_seasonal_line_chart(indoor_df, "aqi", year)  # Example for AQI
+# ... existing code ...
             else:
                 st.warning("No data found for the selected Device ID.")
 
