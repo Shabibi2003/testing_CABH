@@ -261,13 +261,13 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
     plt.close()
 
     
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
-    finally:
-        # Ensure the database connection is closed
-        if 'conn' in locals() and conn.is_connected():
-            cursor.close()
-            conn.close()
+    # except Exception as e:
+    #     st.error(f"An unexpected error occurred: {e}")
+    # finally:
+    #     # Ensure the database connection is closed
+    #     if 'conn' in locals() and conn.is_connected():
+    #         cursor.close()
+    #         conn.close()
 
 # Streamlit UI
 st.markdown("""
