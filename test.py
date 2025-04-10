@@ -437,5 +437,24 @@ if st.button("Generate Charts"):
 
                 plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
 
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
+                
+            else:
+                st.warning("No data found for the given Device ID and selected month.")
+
+        except mysql.connector.Error as e:
+            st.error(f"Database error: {e}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
+        finally:
+            st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
+
+            # Ensure the database connection is closed
+            if 'conn' in locals() and conn.is_connected():
+                cursor.close()
+                conn.close()
                 # Plot indoor vs outdoor scatter plots for specific pollutants
              
