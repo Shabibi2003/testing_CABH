@@ -380,6 +380,7 @@ if st.button("Generate Charts"):
             # ... existing code ...
 
             # Query to fetch indoor data for selected month
+            # These queries are defined but not properly connected to the data processing
             indoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
@@ -388,7 +389,6 @@ if st.button("Generate Charts"):
             cursor.execute(indoor_query, (device_id, year, selected_month))
             indoor_rows = cursor.fetchall()
 
-            # Query to fetch outdoor data for selected month
             outdoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM cpcb_data
@@ -399,28 +399,26 @@ if st.button("Generate Charts"):
 
 # ... existing code ...
 
-                # Generate the seasonal line chart for the entire year
-            if device_id in residential_ids:
-                    # New query to fetch all data for residential yearly plot
-                    yearly_query = """
-                    SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
-                    FROM reading_db
-                    WHERE deviceID = %s;
-                    """
-                    cursor.execute(yearly_query, (device_id,))
-                    yearly_rows = cursor.fetchall()
-                    
-                    if yearly_rows:
-                        yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                        yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                        yearly_df.set_index('datetime', inplace=True)
-                        
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        plot_residential_seasonal_line_chart(yearly_df, "aqi", year)
+            # The residential seasonal chart function still uses year-specific data
+            yearly_query = """
+            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+            FROM reading_db
+            WHERE deviceID = %s AND YEAR(datetime) = %s;
+            """
 
-# ... existing code ...
+            cursor.execute(yearly_query, (device_id,))
+            yearly_rows = cursor.fetchall()
+            
+            if yearly_rows:
+                yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                yearly_df.set_index('datetime', inplace=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                plot_residential_seasonal_line_chart(yearly_df, "aqi", year)
+
             else:
                 st.warning("No data found for the selected Device ID.")
 
