@@ -107,15 +107,31 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
     )
 
     for pollutant in pollutant_display_names.keys():
-        if f"{pollutant}_indoor" in combined_df.columns and f"{pollutant}_outdoor" in combined_df.columns:
+        indoor_column = f"{pollutant}_indoor"
+        outdoor_column = f"{pollutant}_outdoor"
+
+        # Check if the indoor column exists
+        if indoor_column in combined_df.columns:
             fig, ax = plt.subplots(figsize=(10, 6))
-            combined_df[f"{pollutant}_indoor"].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Indoor)", color='blue')
-            combined_df[f"{pollutant}_outdoor"].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
-            ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor vs Outdoor", fontsize=14)
+
+            # Plot indoor data
+            combined_df[indoor_column].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Indoor)", color='blue')
+
+            # Plot outdoor data only if it exists and is not empty
+            if outdoor_column in combined_df.columns and not combined_df[outdoor_column].isna().all():
+                combined_df[outdoor_column].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
+                ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor vs Outdoor", fontsize=14)
+            else:
+                # Update title and legend for indoor-only data
+                ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor", fontsize=14)
+
+            # Set chart labels and legend
             ax.set_xlabel("Date", fontsize=12)
             ax.set_ylabel(pollutant_display_names[pollutant], fontsize=12)
             ax.legend()
             ax.grid(True)
+
+            # Display the plot
             st.pyplot(fig)
             plt.close()
 
