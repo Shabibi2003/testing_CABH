@@ -228,33 +228,18 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
-    # Connect to the database to fetch yearly data
     try:
-        conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database
-        )
-        cursor = conn.cursor()
-
-        # Query to fetch yearly data for the indoor device
-        yearly_query = """
-        SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
-        FROM reading_db
-        WHERE deviceID = %s AND YEAR(datetime) = %s;
-        """
-        cursor.execute(yearly_query, (device_id, year))
-        yearly_rows = cursor.fetchall()
-
-        if not yearly_rows:
-            st.warning(f"No yearly data found for Device ID {device_id} in {year}.")
+        # Use the existing indoor_df instead of fetching new data
+        if indoor_df.empty:
+            st.warning(f"No data available for analysis in {year}.")
             return
 
-        # Create a DataFrame for yearly data
-        yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-        yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-        yearly_df.set_index('datetime', inplace=True)
+        # Create a copy of the DataFrame to avoid modifying the original
+        yearly_df = indoor_df.copy()
+        
+        # Ensure datetime index
+        if not isinstance(yearly_df.index, pd.DatetimeIndex):
+            yearly_df.index = pd.to_datetime(yearly_df.index)
 
         # Filter out rows with zero values in the pollutant column
         yearly_df = yearly_df[yearly_df[pollutant] != 0]
@@ -376,115 +361,69 @@ if st.button("Generate Charts"):
                 st.error(f"No outdoor device mapping found for indoor device ID {device_id}.")
                 st.stop()
 
-            # Query to fetch all indoor data
-            # ... existing code ...
-
-            # Query to fetch indoor data for selected month
-            # These queries are defined but not properly connected to the data processing
+            # Fetch all indoor data
             indoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
-            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
+            WHERE deviceID = %s;
             """
-            cursor.execute(indoor_query, (device_id, year, selected_month))
+            cursor.execute(indoor_query, (device_id,))
             indoor_rows = cursor.fetchall()
 
+            # Fetch all outdoor data
             outdoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM cpcb_data
-            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
+            WHERE deviceID = %s;
             """
-            cursor.execute(outdoor_query, (outdoor_device_id, year, selected_month))
+            cursor.execute(outdoor_query, (outdoor_device_id,))
             outdoor_rows = cursor.fetchall()
 
-            if indoor_rows and outdoor_rows:
-                # Process indoor data
+            if indoor_rows:
+                # Process all indoor data
                 indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'])
                 indoor_df.set_index('datetime', inplace=True)
-                
-                # Filter indoor data: Remove rows with zero in specific columns before resampling
-                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
-                indoor_df = indoor_df[(indoor_df[columns_to_check_indoor] != 0).all(axis=1)]
-                
-                # Now resample to daily averages after filtering out zero values
-                indoor_df = indoor_df.resample('D').mean()
-                
-                # Process outdoor data
-                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                outdoor_df.set_index('datetime', inplace=True)
-                
-                # Filter outdoor data: Remove rows with zero in specific columns before resampling
-                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
-                outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
-                
-                # outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
-                # st.download_button(
-                #     label="📥 Download Outdoor Data with Datetime",
-                #     data=outdoor_csv,
-                #     file_name='outdoor_mean_data.csv',
-                #     mime='text/csv'
-                # )
-                # Now resample to daily averages after filtering out zero values
-                outdoor_df = outdoor_df.resample('D').mean()
 
-                # outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
-                # st.download_button(
-                #     label="📥 Download Outdoor Data with Datetime",
-                #     data=outdoor_csv,
-                #     file_name='outdoor_data.csv',
-                #     mime='text/csv'
-                # ) 
+                # Process all outdoor data
+                if outdoor_rows:
+                    outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                    outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'])
+                    outdoor_df.set_index('datetime', inplace=True)
 
-                features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
-                plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
-                
-                st.markdown("<br>", unsafe_allow_html= True)
-                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html = True)
+                    # Filter data for selected month for visualizations
+                    monthly_indoor_df = indoor_df[
+                        (indoor_df.index.year == year) & 
+                        (indoor_df.index.month == selected_month)
+                    ]
+                    monthly_outdoor_df = outdoor_df[
+                        (outdoor_df.index.year == year) & 
+                        (outdoor_df.index.month == selected_month)
+                    ]
 
-                plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+                    if not monthly_indoor_df.empty:
+                        # Generate monthly visualizations
+                        features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
+                        plot_and_display_feature_heatmaps(monthly_indoor_df, features, year, selected_month)
+                        plot_and_display_line_charts(monthly_indoor_df, monthly_outdoor_df, pollutant_display_names)
+                        plot_indoor_vs_outdoor_scatter(monthly_indoor_df, monthly_outdoor_df, ['aqi', 'pm10', 'pm25'])
 
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
-                
-            else:
-                st.warning("No data found for the given Device ID and selected month.")
-
-# ... existing code ...
-
-            # The residential seasonal chart function still uses year-specific data
-            yearly_query = """
-            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
-            FROM reading_db
-            WHERE deviceID = %s AND YEAR(datetime) = %s;
-            """
-
-            cursor.execute(yearly_query, (device_id,))
-            yearly_rows = cursor.fetchall()
-            
-            if yearly_rows:
-                yearly_df = pd.DataFrame(yearly_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
-                yearly_df['datetime'] = pd.to_datetime(yearly_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                yearly_df.set_index('datetime', inplace=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(yearly_df, "aqi", year)
-
+                # For residential buildings, use the complete dataset
+                if device_id in residential_ids:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    plot_residential_seasonal_line_chart(indoor_df, "aqi", year)
             else:
                 st.warning("No data found for the selected Device ID.")
+
+            st.success("Charts generated successfully!")
 
         except mysql.connector.Error as e:
             st.error(f"Database error: {e}")
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")
         finally:
-            # Ensure the database connection is closed
             if 'conn' in locals() and conn.is_connected():
                 cursor.close()
                 conn.close()
