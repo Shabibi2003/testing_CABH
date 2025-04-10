@@ -365,7 +365,7 @@ if st.button("Generate Charts"):
             indoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM reading_db
-            WHERE deviceID = %s;
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
             cursor.execute(indoor_query, (device_id,))
             indoor_rows = cursor.fetchall()
@@ -374,7 +374,7 @@ if st.button("Generate Charts"):
             outdoor_query = """
             SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
             FROM cpcb_data
-            WHERE deviceID = %s;
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s AND DateTime >= '2024-01-01';
             """
             cursor.execute(outdoor_query, (outdoor_device_id,))
             outdoor_rows = cursor.fetchall()
