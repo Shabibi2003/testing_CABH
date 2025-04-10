@@ -397,6 +397,63 @@ if st.button("Generate Charts"):
             cursor.execute(outdoor_query, (outdoor_device_id, year, selected_month))
             outdoor_rows = cursor.fetchall()
 
+            if indoor_rows and outdoor_rows:
+                # Process indoor data
+                indoor_df = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                indoor_df['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                indoor_df.set_index('datetime', inplace=True)
+                
+                # Filter indoor data: Remove rows with zero in specific columns before resampling
+                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
+                indoor_df = indoor_df[(indoor_df[columns_to_check_indoor] != 0).all(axis=1)]
+                
+                # Now resample to daily averages after filtering out zero values
+                indoor_df = indoor_df.resample('D').mean()
+                
+                # Process outdoor data
+                outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                outdoor_df.set_index('datetime', inplace=True)
+                
+                # Filter outdoor data: Remove rows with zero in specific columns before resampling
+                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
+                outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
+                
+                # outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
+                # st.download_button(
+                #     label="📥 Download Outdoor Data with Datetime",
+                #     data=outdoor_csv,
+                #     file_name='outdoor_mean_data.csv',
+                #     mime='text/csv'
+                # )
+                # Now resample to daily averages after filtering out zero values
+                outdoor_df = outdoor_df.resample('D').mean()
+
+                # outdoor_csv = outdoor_df.to_csv().encode('utf-8')  
+                # st.download_button(
+                #     label="📥 Download Outdoor Data with Datetime",
+                #     data=outdoor_csv,
+                #     file_name='outdoor_data.csv',
+                #     mime='text/csv'
+                # ) 
+
+                features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity'] 
+                plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month)
+                
+                st.markdown("<br>", unsafe_allow_html= True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html = True)
+
+                plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'])
+                
+            else:
+                st.warning("No data found for the given Device ID and selected month.")
+
 # ... existing code ...
 
             # The residential seasonal chart function still uses year-specific data
