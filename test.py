@@ -449,7 +449,10 @@ else:
 
 # Call the seasonal line chart function with the full indoor_df
 if device_id in residential_ids:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
-    plot_residential_seasonal_line_chart(indoor_df, "aqi", year)  # Example for AQI
+    if 'indoor_df' in locals() and not indoor_df.empty:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold';>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        plot_residential_seasonal_line_chart(indoor_df, "aqi", year)  # Example for AQI
+    else:
+        st.warning("No indoor data available to generate the seasonal line chart.")
