@@ -273,22 +273,7 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
 
 
 # Function to generate and download all plots shown in the UI as a PDF
-def generate_and_download_all_plots_pdf(figures):
-    pdf_buffer = io.BytesIO()  # Create an in-memory buffer for the PDF
-    with PdfPages(pdf_buffer) as pdf:
-        for fig in figures:
-            pdf.savefig(fig)  # Save each pre-generated figure to the PDF
-            plt.close(fig)
 
-    # Create a download button for the PDF without reloading the page
-    pdf_buffer.seek(0)  # Reset the buffer position to the beginning
-    st.download_button(
-        label="📥 Download All Plots as PDF",
-        data=pdf_buffer,
-        file_name="all_air_quality_plots.pdf",
-        mime="application/pdf",
-        key="download_all_plots_pdf"  # Add a unique key to prevent page reload
-    )
 
 # Streamlit UI
 st.markdown("""
@@ -456,8 +441,6 @@ if st.button("Generate Charts"):
             else:
                 st.warning("No yearly data found for the selected Device ID.")
 
-            # Generate and download all plots shown in the UI as a PDF
-            generate_and_download_all_plots_pdf(figures)
 
         except mysql.connector.Error as e:
             st.error(f"Database error: {e}")
