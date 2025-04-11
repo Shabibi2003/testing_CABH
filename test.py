@@ -207,40 +207,25 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         all_figs[f"{feature}_heatmap"] = fig
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
 
-def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
-    indoor_df_hourly = indoor_df.resample('H').mean()
-    outdoor_df_hourly = outdoor_df.resample('H').mean()
+def plot_indoor_vs_hour_scatter(indoor_df, pollutants, year, month, all_figs):
+    # Filter the dataframe for the selected month and year
+    monthly_df = indoor_df[(indoor_df.index.year == year) & (indoor_df.index.month == month)].copy()
+    if monthly_df.empty:
+        return
+
+    # Create 'hour_of_month' as x-axis: (day - 1) * 24 + hour
+    monthly_df['hour_of_month'] = (monthly_df.index.day - 1) * 24 + monthly_df.index.hour
 
     for pollutant in pollutants:
-        if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
-            data = pd.merge(
-                indoor_df_hourly[[pollutant]],
-                outdoor_df_hourly[[pollutant]],
-                left_index=True,
-                right_index=True,
-                how='inner',
-                suffixes=('_indoor', '_outdoor')
-            )
-            if data.empty:
-                continue
-
-            data['timestamp'] = data.index.strftime('%Y-%m-%d %H:%M')
-
-            fig = px.scatter(
-                data,
-                x=f"{pollutant}_indoor",
-                y=f"{pollutant}_outdoor",
-                hover_name='timestamp',
-                title=f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}",
-                labels={
-                    f"{pollutant}_indoor": f"{pollutant.upper()} (Indoor)",
-                    f"{pollutant}_outdoor": f"{pollutant.upper()} (Outdoor)"
-                },
-                opacity=0.7,
-                color_discrete_sequence=['white']
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
+        if pollutant in monthly_df.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.scatter(monthly_df['hour_of_month'], monthly_df[pollutant], alpha=0.6, color='green')
+            ax.set_title(f"{pollutant.upper()} vs Hour of Month", fontsize=14)
+            ax.set_xlabel("Hour of Month", fontsize=12)
+            ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+            ax.grid(True)
+            st.pyplot(fig)
+            all_figs[f"{pollutant}_hour_scatter_{month}_{year}"] = fig
 
 
 # Function to plot yearly data for residential buildings divided into seasons
