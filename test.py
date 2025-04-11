@@ -213,7 +213,7 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         
         outdoor_csv = indoor_df_hourly.to_csv().encode('utf-8')  
         st.download_button(
-        label="📥 Download Outdoor Data with Datetime",
+        label="📥 test",
         data=outdoor_csv,
         file_name='indoor_df_hourly.csv',
         mime='text/csv'
