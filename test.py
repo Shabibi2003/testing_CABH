@@ -222,7 +222,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             all_figs[f"{pollutant}_scatter_plot"] = fig
 
 # Function to plot yearly data for residential buildings divided into seasons
-def plot_residential_seasonal_line_chart(indoor_df, pollutant, year, all_figs):
+def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
     seasons = {
         "Spring": [2, 3, 4],
         "Summer": [5, 6, 7],
@@ -231,23 +231,27 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year, all_figs):
     }
 
     yearly_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for season, months in seasons.items():
-        seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
-        if not seasonal_data.empty:
-            seasonal_data = seasonal_data.resample('D').mean()
-            ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
-        else:
-            ax.plot([], [], label=f"{season} (No Data)")
 
-    ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
-    ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
-    ax.legend(title="Season")
-    ax.grid(True)
-    ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
-    st.pyplot(fig)
-    all_figs[f"{pollutant}_seasonal_chart_{year}"] = fig
+    for pollutant in pollutants:
+        if pollutant not in indoor_df.columns:
+            continue
+        fig, ax = plt.subplots(figsize=(10, 6))
+        for season, months in seasons.items():
+            seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
+            if not seasonal_data.empty:
+                seasonal_data = seasonal_data.resample('D').mean()
+                ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+            else:
+                ax.plot([], [], label=f"{season} (No Data)")
+
+        ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+        ax.set_xlabel("Date", fontsize=12)
+        ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+        ax.legend(title="Season")
+        ax.grid(True)
+        ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
+        st.pyplot(fig)
+        all_figs[f"{pollutant}_seasonal_chart_{year}"] = fig
 
 
     # except mysql.connector.Error as e:
@@ -417,7 +421,10 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(indoor_df_year, "aqi", year, all_figs)
+                
+                seasonal_pollutants = ["aqi", "pm10", "pm25", "co2", "voc"]
+                plot_residential_seasonal_line_charts(indoor_df_year, seasonal_pollutants, year, all_figs)
+        
 
 
             else:
