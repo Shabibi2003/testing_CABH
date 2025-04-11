@@ -140,7 +140,7 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names,
 
 
 # Function to plot and display heatmaps for each feature (pollutant)
-plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc'], year, selected_month, all_figs)
+def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs):
     feature_boundaries = {
         'aqi': [0, 50, 100, 150, 200, 300, 500],
         'pm25': [0, 12, 35, 55, 150, 250, 500],
@@ -204,21 +204,25 @@ plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc
         st.pyplot(fig)
         all_figs[f"{feature}_heatmap"] = fig
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
-def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
-    for pollutant in pollutants:
-        if pollutant in indoor_df.columns and pollutant in outdoor_df.columns:
-            data = pd.merge(indoor_df[[pollutant]], outdoor_df[[pollutant]], left_index=True, right_index=True, how='inner')
-            if data.empty:
-                continue
+def plot_indoor_vs_hour_scatter(indoor_df, pollutants, year, month, all_figs):
+    # Filter the dataframe for the selected month and year
+    monthly_df = indoor_df[(indoor_df.index.year == year) & (indoor_df.index.month == month)].copy()
+    if monthly_df.empty:
+        return
 
-            fig, ax = plt.subplots(figsize=(8, 6))
-            ax.scatter(data[pollutant + '_x'], data[pollutant + '_y'], color='purple', alpha=0.7)
-            ax.set_title(f"Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
-            ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
-            ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
+    # Create 'hour_of_month' as x-axis: (day - 1) * 24 + hour
+    monthly_df['hour_of_month'] = (monthly_df.index.day - 1) * 24 + monthly_df.index.hour
+
+    for pollutant in pollutants:
+        if pollutant in monthly_df.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.scatter(monthly_df['hour_of_month'], monthly_df[pollutant], alpha=0.6, color='green')
+            ax.set_title(f"{pollutant.upper()} vs Hour of Month", fontsize=14)
+            ax.set_xlabel("Hour of Month", fontsize=12)
+            ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
             ax.grid(True)
             st.pyplot(fig)
-            all_figs[f"{pollutant}_scatter_plot"] = fig
+            all_figs[f"{pollutant}_hour_scatter_{month}_{year}"] = fig
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
@@ -405,7 +409,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
+                plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc'], year, selected_month, all_figs)
 
 
             else:
