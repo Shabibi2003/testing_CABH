@@ -207,17 +207,14 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         all_figs[f"{feature}_heatmap"] = fig
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
         indoor_df_month.index = pd.to_datetime(indoor_df.index)
-        outdoor_df.index = pd.to_datetime(outdoor_df.index)
-        indoor_df_hourly = indoor_df_month.resample('H').mean()
-        outdoor_df_hourly = outdoor_df.resample('H').mean()
-        
+        indoor_df_hourly = indoor_df_month.resample('H').mean()        
         hourly_csv = indoor_df_hourly.to_csv().encode('utf-8')  
         st.download_button(
         label="📥 test",
         data=hourly_csv,
         file_name='indoor_df_hourly.csv',
         mime='text/csv',
-        key='kjfhasldkfjsalkdfjaslkdfjsalkdfj'  # Add a unique key here
+        key='1234555'  # Add a unique key here
         )
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
