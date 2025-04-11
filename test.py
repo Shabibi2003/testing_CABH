@@ -387,18 +387,21 @@ if st.button("Generate Charts"):
 
                 # Generate heatmaps and other plots using one-month data
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
-                plot_and_display_feature_heatmaps(indoor_df_month, features, year, selected_month)
+                plot_and_display_feature_heatmaps(indoor_df_month, features, year, selected_month, all_figs)
+
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
 
-                plot_and_display_line_charts(indoor_df_month, outdoor_df, pollutant_display_names)
+                plot_and_display_line_charts(indoor_df_month, outdoor_df, pollutant_display_names, all_figs)
+
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, ['aqi', 'pm10', 'pm25'])
+                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
+
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
@@ -412,7 +415,8 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(indoor_df_year, "aqi", year)
+                plot_residential_seasonal_line_chart(indoor_df_year, "aqi", year, all_figs)
+
 
             else:
                 st.warning("No yearly data found for the selected Device ID.")
