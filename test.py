@@ -416,7 +416,7 @@ if st.button("Generate Charts"):
                 # plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc'], year, selected_month, all_figs)
                 pollutants = ["aqi", "pm10", "pm25", "co2", "voc"]
                 # plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, pollutants, all_figs)
-                plot_indoor_vs_hour_scatter(indoor_df_month, outdoor_df, pollutants, all_figs)
+                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, pollutants, all_figs)
 
 
             else:
