@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
+from io import BytesIO
 
 st.set_page_config(
     page_title="Indoor Air Quality Dashboard",
@@ -14,6 +15,18 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded"
 )
+
+def add_download_button(fig, filename):
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+    buf.seek(0)
+    st.download_button(
+        label=f"📥 Download {filename}",
+        data=buf,
+        file_name=filename,
+        mime="image/png"
+    )
+
 
 # Database connection details
 host = "139.59.34.149"
@@ -122,8 +135,11 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names)
             ax.set_ylabel(pollutant_display_names[pollutant], fontsize=12)
             ax.legend()
             ax.grid(True)
+
             st.pyplot(fig)
+            add_download_button(fig, f"{pollutant}_line_chart.png")
             plt.close()
+
 
 # Function to plot and display heatmaps for each feature (pollutant)
 def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
@@ -196,7 +212,9 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month):
         cbar.ax.tick_params(labelsize=12)
 
         st.pyplot(fig)
+        add_download_button(fig, f"{feature}_heatmap_{year}_{month}.png")
         plt.close()
+
 
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
@@ -224,6 +242,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants):
             
             ax.grid(True)
             st.pyplot(fig)
+            add_download_button(fig, f"{pollutant}_scatter_plot.png")
             plt.close()
 
 # Function to plot yearly data for residential buildings divided into seasons
@@ -292,7 +311,9 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
         ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
 
         st.pyplot(fig)
+        add_download_button(fig, f"{pollutant}_seasonal_chart_{year}.png")
         plt.close()
+
 
     # except mysql.connector.Error as e:
     #     st.error(f"Database error while fetching yearly data: {e}")
