@@ -449,7 +449,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
 
                 # Loop through pollutants and generate a seasonal line chart for each
-                for pollutant in ['aqi', 'pm10', 'pm25']:
+                for pollutant in ['aqi', 'pm10', 'pm25','co2','voc']:
                     fig = plot_residential_seasonal_line_chart(indoor_df_year, pollutant, year)
                     figures.append(fig)
 
