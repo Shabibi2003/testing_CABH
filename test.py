@@ -212,7 +212,7 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         outdoor_df_hourly = outdoor_df.resample('H').mean()
         
         hourly_csv = indoor_df_hourly.to_csv().encode('utf-8')  
-       st.download_button(
+        st.download_button(
         label="📥 test",
         data=hourly_csv,
         file_name='indoor_df_hourly.csv',
