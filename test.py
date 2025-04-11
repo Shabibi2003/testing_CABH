@@ -420,7 +420,10 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(indoor_df_year, ['aqi', 'pm10', 'pm25'] , year)
+
+                # Loop through pollutants and generate a seasonal line chart for each
+                for pollutant in ['aqi', 'pm10', 'pm25']:
+                    plot_residential_seasonal_line_chart(indoor_df_year, pollutant, year)
 
             else:
                 st.warning("No yearly data found for the selected Device ID.")
