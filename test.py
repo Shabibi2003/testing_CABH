@@ -8,6 +8,8 @@ import numpy as np
 import calendar
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.backends.backend_pdf import PdfPages
+from io import BytesIO
+
 
 st.set_page_config(
     page_title="Indoor Air Quality Dashboard",
