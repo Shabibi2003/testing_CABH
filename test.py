@@ -209,11 +209,11 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Ensure datetime is datetime type and localized if needed
-    indoor_df.index = pd.to_datetime(indoor_df.index)
+    indoor_df_month.index = pd.to_datetime(indoor_df.index)
     outdoor_df.index = pd.to_datetime(outdoor_df.index)
 
     # Resample to hourly averages
-    indoor_df_hourly = indoor_df.resample('H').mean()
+    indoor_df_hourly = indoor_df_month.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
     for pollutant in pollutants:
