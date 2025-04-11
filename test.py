@@ -375,7 +375,7 @@ if st.button("Generate Charts"):
                 indoor_df_month.set_index('datetime', inplace=True)
 
                 # Filter indoor data: Remove rows with zero in specific columns before resampling
-                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
+                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  
                 indoor_df_month = indoor_df_month[(indoor_df_month[columns_to_check_indoor] != 0).all(axis=1)]
 
                 # Resample to daily averages after filtering out zero values
@@ -387,7 +387,7 @@ if st.button("Generate Charts"):
                 outdoor_df.set_index('datetime', inplace=True)
 
                 # Filter outdoor data: Remove rows with zero in specific columns before resampling
-                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
+                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  
                 outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
 
                 # Resample to daily averages after filtering out zero values
@@ -420,7 +420,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(indoor_df_year, "aqi", year)
+                plot_residential_seasonal_line_chart(indoor_df_year, ['aqi', 'pm10', 'pm25'] , year)
 
             else:
                 st.warning("No yearly data found for the selected Device ID.")
