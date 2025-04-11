@@ -208,6 +208,7 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
+    # Resample to hourly averages
     indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
@@ -218,49 +219,51 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                 outdoor_df_hourly[[pollutant]],
                 left_index=True,
                 right_index=True,
-                how='inner',
-                suffixes=('_indoor', '_outdoor')
+                how='inner'
             )
 
             if data.empty:
                 continue
 
-            data['timestamp'] = data.index
             data['hour'] = data.index.hour
 
-            def categorize_time(hour):
+            def get_color(hour):
                 if 9 <= hour <= 12:
-                    return 'Breakfast Time'
+                    return 'orange'  # Breakfast
                 elif 13 <= hour <= 15:
-                    return 'Lunch Time'
+                    return 'green'   # Lunch
                 elif 19 <= hour <= 21:
-                    return 'Dinner Time'
+                    return 'purple'  # Dinner
                 else:
-                    return 'Other'
+                    return 'gray'    # Other
 
-            data['time_category'] = data['hour'].apply(categorize_time)
+            colors = data['hour'].apply(get_color)
 
-            fig = px.scatter(
-                data,
-                x=f"{pollutant}_indoor",
-                y=f"{pollutant}_outdoor",
-                color="time_category",
-                hover_name="timestamp",
-                title=f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()} (Colored by Time of Day)",
-                labels={
-                    f"{pollutant}_indoor": f"{pollutant.upper()} (Indoor)",
-                    f"{pollutant}_outdoor": f"{pollutant.upper()} (Outdoor)"
-                },
-                opacity=0.8,
-                color_discrete_map={
-                    'Breakfast Time': 'orange',
-                    'Lunch Time': 'green',
-                    'Dinner Time': 'purple',
-                    'Other': 'gray'
-                }
+            fig, ax = plt.subplots(figsize=(8, 6))
+            scatter = ax.scatter(
+                data.iloc[:, 0],  # indoor
+                data.iloc[:, 1],  # outdoor
+                c=colors,
+                alpha=0.7
             )
 
-            st.plotly_chart(fig, use_container_width=True)
+            ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()} (Colored by Time of Day)", fontsize=14)
+            ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
+            ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
+            ax.grid(True)
+
+            # Custom legend
+            from matplotlib.lines import Line2D
+            legend_elements = [
+                Line2D([0], [0], marker='o', color='w', label='Breakfast Time (9-12)', markerfacecolor='orange', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Lunch Time (13-15)', markerfacecolor='green', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Dinner Time (19-21)', markerfacecolor='purple', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Other', markerfacecolor='gray', markersize=8)
+            ]
+            ax.legend(handles=legend_elements, title="Time of Day")
+
+            st.pyplot(fig)
+            all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
