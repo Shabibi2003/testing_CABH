@@ -140,7 +140,7 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names,
 
 
 # Function to plot and display heatmaps for each feature (pollutant)
-def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs):
+plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc'], year, selected_month, all_figs)
     feature_boundaries = {
         'aqi': [0, 50, 100, 150, 200, 300, 500],
         'pm25': [0, 12, 35, 55, 150, 250, 500],
@@ -203,7 +203,6 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
         st.pyplot(fig)
         all_figs[f"{feature}_heatmap"] = fig
-
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     for pollutant in pollutants:
