@@ -208,6 +208,10 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 # Function to plot scatter plots with indoor data on x-axis and outdoor data on y-axis
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
+    # Ensure datetime is datetime type and localized if needed
+    indoor_df.index = pd.to_datetime(indoor_df.index)
+    outdoor_df.index = pd.to_datetime(outdoor_df.index)
+
     # Resample to hourly averages
     indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
@@ -225,15 +229,16 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             if data.empty:
                 continue
 
-            data['hour'] = data.index.hour
+            data = data.dropna()
+            data['hour'] = data.index.hour.astype(int)
 
             def get_color(hour):
-                if 9 <= hour <= 12:
-                    return 'orange'  # Breakfast
-                elif 13 <= hour <= 15:
-                    return 'green'   # Lunch
-                elif 19 <= hour <= 21:
-                    return 'purple'  # Dinner
+                if 9 <= hour < 13:
+                    return 'orange'  # Breakfast (9:00–12:59)
+                elif 13 <= hour < 16:
+                    return 'green'   # Lunch (13:00–15:59)
+                elif 19 <= hour < 22:
+                    return 'purple'  # Dinner (19:00–21:59)
                 else:
                     return 'gray'    # Other
 
@@ -255,16 +260,15 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             # Custom legend
             from matplotlib.lines import Line2D
             legend_elements = [
-                Line2D([0], [0], marker='o', color='w', label='Breakfast Time (9-12)', markerfacecolor='orange', markersize=8),
-                Line2D([0], [0], marker='o', color='w', label='Lunch Time (13-15)', markerfacecolor='green', markersize=8),
-                Line2D([0], [0], marker='o', color='w', label='Dinner Time (19-21)', markerfacecolor='purple', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Breakfast Time (9–12)', markerfacecolor='orange', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Lunch Time (13–15)', markerfacecolor='green', markersize=8),
+                Line2D([0], [0], marker='o', color='w', label='Dinner Time (19–21)', markerfacecolor='purple', markersize=8),
                 Line2D([0], [0], marker='o', color='w', label='Other', markerfacecolor='gray', markersize=8)
             ]
             ax.legend(handles=legend_elements, title="Time of Day")
 
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
-
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
     seasons = {
