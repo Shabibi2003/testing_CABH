@@ -237,7 +237,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                     f"{pollutant}_outdoor": f"{pollutant.upper()} (Outdoor)"
                 },
                 opacity=0.7,
-                color_discrete_sequence=['purple']
+                color_discrete_sequence=['white']
             )
 
             st.plotly_chart(fig, use_container_width=True)
