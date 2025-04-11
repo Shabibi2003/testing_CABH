@@ -422,8 +422,8 @@ if st.button("Generate Charts"):
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                seasonal_pollutants = ["aqi", "pm10", "pm25", "co2", "voc"]
-                plot_residential_seasonal_line_charts(indoor_df_year, seasonal_pollutants, year, all_figs)
+                pollutants = ["aqi", "pm10", "pm25", "co2", "voc"]
+                plot_residential_seasonal_line_charts(indoor_df_year, pollutants, year, all_figs)
         
 
 
