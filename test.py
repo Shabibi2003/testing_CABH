@@ -212,12 +212,14 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         outdoor_df_hourly = outdoor_df.resample('H').mean()
         
         hourly_csv = indoor_df_hourly.to_csv().encode('utf-8')  
-        st.download_button(
+       st.download_button(
         label="📥 test",
         data=hourly_csv,
         file_name='indoor_df_hourly.csv',
-        mime='text/csv'
+        mime='text/csv',
+        key='download_hourly_indoor_csv'  # Add a unique key here
         )
+
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Ensure datetime is datetime type and localized if needed
     indoor_df_month.index = pd.to_datetime(indoor_df.index)
