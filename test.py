@@ -271,12 +271,12 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutant, year):
     #         cursor.close()
     #         conn.close()
 
-# Function to generate and download all plots as a PDF
-def generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year):
+# Function to generate and download the last few plots as a PDF
+def generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year, num_plots=3):
     pdf_buffer = io.BytesIO()  # Create an in-memory buffer for the PDF
     with PdfPages(pdf_buffer) as pdf:
-        # Generate line charts for pollutants
-        for pollutant in ['aqi', 'pm10', 'pm25']:
+        # Generate line charts for pollutants (last `num_plots` pollutants)
+        for pollutant in ['aqi', 'pm10', 'pm25'][-num_plots:]:
             fig, ax = plt.subplots(figsize=(10, 6))
             if pollutant in indoor_df_month.columns and pollutant in outdoor_df.columns:
                 indoor_df_month[pollutant].plot(ax=ax, label=f"{pollutant.upper()} (Indoor)", color='blue')
@@ -289,8 +289,8 @@ def generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year)
                 pdf.savefig(fig)  # Save the figure to the PDF
                 plt.close(fig)
 
-        # Generate seasonal line charts for pollutants
-        for pollutant in ['aqi', 'pm10', 'pm25']:
+        # Generate seasonal line charts for pollutants (last `num_plots` pollutants)
+        for pollutant in ['aqi', 'pm10', 'pm25'][-num_plots:]:
             fig, ax = plt.subplots(figsize=(10, 6))
             seasons = {
                 "Spring": [2, 3, 4],
@@ -314,9 +314,9 @@ def generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year)
     # Create a download button for the PDF without reloading the page
     pdf_buffer.seek(0)  # Reset the buffer position to the beginning
     st.download_button(
-        label="📥 Download All Plots as PDF",
+        label="📥 Download Last Few Plots as PDF",
         data=pdf_buffer,
-        file_name="air_quality_plots.pdf",
+        file_name="last_few_air_quality_plots.pdf",
         mime="application/pdf",
         key="download_pdf"  # Add a unique key to prevent page reload
     )
@@ -480,8 +480,8 @@ if st.button("Generate Charts"):
             else:
                 st.warning("No yearly data found for the selected Device ID.")
 
-            # Generate and download all plots as a PDF
-            generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year)
+            # Generate and download the last few plots as a PDF
+            generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year, num_plots=2)
 
         except mysql.connector.Error as e:
             st.error(f"Database error: {e}")
