@@ -321,6 +321,81 @@ def generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year,
         key="download_pdf"  # Add a unique key to prevent page reload
     )
 
+# Function to generate and download all plots shown in the UI as a PDF
+def generate_and_download_all_plots_pdf(indoor_df_month, outdoor_df, indoor_df_year, year):
+    pdf_buffer = io.BytesIO()  # Create an in-memory buffer for the PDF
+    with PdfPages(pdf_buffer) as pdf:
+        # Generate heatmaps for pollutants
+        for feature in ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']:
+            if feature in indoor_df_month.columns:
+                fig, ax = plt.subplots(figsize=(10, 6))
+                indoor_df_month[feature].plot(ax=ax, label=f"{feature.upper()} (Indoor)", color='blue')
+                ax.set_title(f"Heatmap for {feature.upper()}", fontsize=14)
+                ax.set_xlabel("Date", fontsize=12)
+                ax.set_ylabel(feature.upper(), fontsize=12)
+                ax.legend()
+                ax.grid(True)
+                pdf.savefig(fig)  # Save the figure to the PDF
+                plt.close(fig)
+
+        # Generate line charts for pollutants
+        for pollutant in ['aqi', 'pm10', 'pm25']:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            if pollutant in indoor_df_month.columns and pollutant in outdoor_df.columns:
+                indoor_df_month[pollutant].plot(ax=ax, label=f"{pollutant.upper()} (Indoor)", color='blue')
+                outdoor_df[pollutant].plot(ax=ax, label=f"{pollutant.upper()} (Outdoor)", color='orange')
+                ax.set_title(f"{pollutant.upper()} - Indoor vs Outdoor", fontsize=14)
+                ax.set_xlabel("Date", fontsize=12)
+                ax.set_ylabel(pollutant.upper(), fontsize=12)
+                ax.legend()
+                ax.grid(True)
+                pdf.savefig(fig)  # Save the figure to the PDF
+                plt.close(fig)
+
+        # Generate scatter plots for pollutants
+        for pollutant in ['aqi', 'pm10', 'pm25']:
+            if pollutant in indoor_df_month.columns and pollutant in outdoor_df.columns:
+                fig, ax = plt.subplots(figsize=(8, 6))
+                ax.scatter(indoor_df_month[pollutant], outdoor_df[pollutant], color='purple', alpha=0.7)
+                ax.set_title(f"Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
+                ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
+                ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
+                ax.grid(True)
+                pdf.savefig(fig)  # Save the figure to the PDF
+                plt.close(fig)
+
+        # Generate seasonal line charts for pollutants
+        for pollutant in ['aqi', 'pm10', 'pm25']:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            seasons = {
+                "Spring": [2, 3, 4],
+                "Summer": [5, 6, 7],
+                "Autumn": [8, 9, 10],
+                "Winter": [11, 12, 1]
+            }
+            for season, months in seasons.items():
+                seasonal_data = indoor_df_year[indoor_df_year.index.month.isin(months)]
+                if not seasonal_data.empty:
+                    seasonal_data = seasonal_data.resample('D').mean()
+                    ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+            ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+            ax.set_xlabel("Date", fontsize=12)
+            ax.set_ylabel(pollutant.upper(), fontsize=12)
+            ax.legend(title="Season")
+            ax.grid(True)
+            pdf.savefig(fig)  # Save the figure to the PDF
+            plt.close(fig)
+
+    # Create a download button for the PDF without reloading the page
+    pdf_buffer.seek(0)  # Reset the buffer position to the beginning
+    st.download_button(
+        label="📥 Download All Plots as PDF",
+        data=pdf_buffer,
+        file_name="all_air_quality_plots.pdf",
+        mime="application/pdf",
+        key="download_all_plots_pdf"  # Add a unique key to prevent page reload
+    )
+
 # Streamlit UI
 st.markdown("""
     <style>
@@ -482,6 +557,9 @@ if st.button("Generate Charts"):
 
             # Generate and download the last few plots as a PDF
             generate_and_download_pdf(indoor_df_month, outdoor_df, indoor_df_year, year, num_plots=2)
+
+            # Generate and download all plots shown in the UI as a PDF
+            generate_and_download_all_plots_pdf(indoor_df_month, outdoor_df, indoor_df_year, year)
 
         except mysql.connector.Error as e:
             st.error(f"Database error: {e}")
