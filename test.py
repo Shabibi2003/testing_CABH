@@ -243,49 +243,56 @@ def plot_indoor_vs_hour_scatter(indoor_df, pollutants, year, month, all_figs):
     indoor_df = indoor_df.dropna(subset=pollutants)
     indoor_df = indoor_df[~indoor_df.index.duplicated(keep='first')]
 
-    # Create a new column for hour
+    indoor_df.index = pd.to_datetime(indoor_df.index, errors='coerce')
+    indoor_df = indoor_df.dropna(subset=['hour' if 'hour' in indoor_df.columns else pollutants[0]])
+
+    # Extract hour
     indoor_df['hour'] = indoor_df.index.hour
 
-    # Define time categories
+
+        # Create a new column for hour
+    indoor_df['hour'] = indoor_df.index.hour
+
+        # Define time categories
     def time_period(hour):
-        if 6 <= hour < 9:
-            return 'Morning'
-        elif 9 <= hour < 12:
-            return 'Breakfast'
-        elif 12 <= hour < 15:
-            return 'Lunch'
-        elif 19 <= hour < 22:
-            return 'Dinner'
-        else:
-            return 'Other'
+            if 6 <= hour < 9:
+                return 'Morning'
+            elif 9 <= hour < 12:
+                return 'Breakfast'
+            elif 12 <= hour < 15:
+                return 'Lunch'
+            elif 19 <= hour < 22:
+                return 'Dinner'
+            else:
+                return 'Other'
 
     indoor_df['time_category'] = indoor_df['hour'].apply(time_period)
 
     color_map = {
-        'Morning': 'skyblue',
-        'Breakfast': 'orange',
-        'Lunch': 'green',
-        'Dinner': 'red',
-        'Other': 'gray'
-    }
+            'Morning': 'skyblue',
+            'Breakfast': 'orange',
+            'Lunch': 'green',
+            'Dinner': 'red',
+            'Other': 'gray'
+        }
 
     for pollutant in pollutants:
-        if pollutant not in indoor_df.columns:
-            continue
+            if pollutant not in indoor_df.columns:
+                continue
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        for category, group in indoor_df.groupby('time_category'):
-            ax.scatter(group['hour'], group[pollutant], 
-                       color=color_map.get(category, 'black'), 
-                       label=category, alpha=0.6)
+            fig, ax = plt.subplots(figsize=(10, 6))
+            for category, group in indoor_df.groupby('time_category'):
+                ax.scatter(group['hour'], group[pollutant], 
+                        color=color_map.get(category, 'black'), 
+                        label=category, alpha=0.6)
 
-        ax.set_title(f"{pollutant.upper()} vs Hour of Day ({calendar.month_name[month]} {year})", fontsize=14)
-        ax.set_xlabel("Hour of Day", fontsize=12)
-        ax.set_ylabel(pollutant.upper(), fontsize=12)
-        ax.legend(title="Time Category")
-        ax.grid(True)
-        st.pyplot(fig)
-        all_figs[f"{pollutant}_vs_hour_scatter"] = fig
+            ax.set_title(f"{pollutant.upper()} vs Hour of Day ({calendar.month_name[month]} {year})", fontsize=14)
+            ax.set_xlabel("Hour of Day", fontsize=12)
+            ax.set_ylabel(pollutant.upper(), fontsize=12)
+            ax.legend(title="Time Category")
+            ax.grid(True)
+            st.pyplot(fig)
+            all_figs[f"{pollutant}_vs_hour_scatter"] = fig
 
 
 
