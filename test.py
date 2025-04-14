@@ -208,10 +208,10 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Ensure datetime is datetime type and localized if needed
-    indoor_df_month.index = pd.to_datetime(indoor_df.index)
+    indoor_df.index = pd.to_datetime(indoor_df.index)
     outdoor_df.index = pd.to_datetime(outdoor_df.index)
 
-    indoor_df_hourly = indoor_df_month.resample('H').mean()
+    indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
     for pollutant in pollutants:
@@ -228,7 +228,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                 continue
 
             data = data.dropna()
-            data['hour'] = data.index.hour.astype(int)
+            data['hour'] = data.index.hour  # Extract hour from the index
 
             def get_color(hour):
                 if 9 <= hour < 13:
@@ -240,13 +240,13 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                 else:
                     return 'gray'    # Other
 
-            colors = data['hour'].apply(get_color)
+            data['color'] = data['hour'].apply(get_color)  # Assign colors based on hour
 
             fig, ax = plt.subplots(figsize=(8, 6))
             scatter = ax.scatter(
                 data.iloc[:, 0],  # indoor
                 data.iloc[:, 1],  # outdoor
-                c=colors,
+                c=data['color'],  # Use the assigned colors
                 alpha=0.7
             )
 
@@ -267,6 +267,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
 
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
+
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
     seasons = {
