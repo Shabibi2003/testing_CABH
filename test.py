@@ -208,36 +208,73 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Ensure datetime is datetime type and localized if needed
+    # indoor_df.index = pd.to_datetime(indoor_df.index)
+
+    # indoor_df_hourly = indoor_df.resample('H').mean()
+
+    # for pollutant in pollutants:
+    #     if pollutant in indoor_df_hourly.columns:
+    #         data = indoor_df_hourly[[pollutant]].dropna()
+    #         data['hour'] = data.index.hour  # Extract hour from the index
+
+    #         fig, ax = plt.subplots(figsize=(8, 6))
+    #         scatter = ax.scatter(
+    #             data['hour'],  # Number of hours on the x-axis
+    #             data[pollutant],  # Indoor pollutant data on the y-axis
+    #             c=data['hour'],  # Color based on the hour
+    #             cmap='viridis',  # Use a colormap for better visualization
+    #             alpha=0.7
+    #         )
+
+    #         ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Data)", fontsize=14)
+    #         ax.set_xlabel("Hour of the Day", fontsize=12)
+    #         ax.set_ylabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
+    #         ax.set_xticks(range(0, 24))  # Ensure x-axis shows all hours
+    #         ax.grid(True)
+
+    #         # Add a colorbar to indicate the hour
+    #         cbar = fig.colorbar(scatter, ax=ax)
+    #         cbar.set_label("Hour of the Day", fontsize=12)
+
+    #         st.pyplot(fig)
+    #         all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
     indoor_df.index = pd.to_datetime(indoor_df.index)
 
+    # Step 1: Resample to hourly average
     indoor_df_hourly = indoor_df.resample('H').mean()
 
     for pollutant in pollutants:
         if pollutant in indoor_df_hourly.columns:
             data = indoor_df_hourly[[pollutant]].dropna()
-            data['hour'] = data.index.hour  # Extract hour from the index
 
+            # Step 2: Extract hour of day
+            data['hour'] = data.index.hour
+
+            # Step 3: Group by hour and take average across all days
+            hourly_avg = data.groupby('hour')[pollutant].mean().reset_index()
+
+            # Plot
             fig, ax = plt.subplots(figsize=(8, 6))
             scatter = ax.scatter(
-                data['hour'],  # Number of hours on the x-axis
-                data[pollutant],  # Indoor pollutant data on the y-axis
-                c=data['hour'],  # Color based on the hour
-                cmap='viridis',  # Use a colormap for better visualization
+                hourly_avg['hour'],
+                hourly_avg[pollutant],
+                c=hourly_avg['hour'],
+                cmap='viridis',
                 alpha=0.7
             )
 
-            ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Data)", fontsize=14)
+            ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Avg)", fontsize=14)
             ax.set_xlabel("Hour of the Day", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
-            ax.set_xticks(range(0, 24))  # Ensure x-axis shows all hours
+            ax.set_xticks(range(0, 24))
             ax.grid(True)
 
-            # Add a colorbar to indicate the hour
             cbar = fig.colorbar(scatter, ax=ax)
             cbar.set_label("Hour of the Day", fontsize=12)
 
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
+
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_charts(indoor_df, pollutants, year, all_figs):
