@@ -209,61 +209,31 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Ensure datetime is datetime type and localized if needed
     indoor_df.index = pd.to_datetime(indoor_df.index)
-    outdoor_df.index = pd.to_datetime(outdoor_df.index)
 
     indoor_df_hourly = indoor_df.resample('H').mean()
-    outdoor_df_hourly = outdoor_df.resample('H').mean()
 
     for pollutant in pollutants:
-        if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
-            data = pd.merge(
-                indoor_df_hourly[[pollutant]],
-                outdoor_df_hourly[[pollutant]],
-                left_index=True,
-                right_index=True,
-                how='inner'
-            )
-
-            if data.empty:
-                continue
-
-            data = data.dropna()
+        if pollutant in indoor_df_hourly.columns:
+            data = indoor_df_hourly[[pollutant]].dropna()
             data['hour'] = data.index.hour  # Extract hour from the index
-
-            def get_color(hour):
-                if 9 <= hour < 13:
-                    return 'orange'  # Breakfast (9:00–12:59)
-                elif 13 <= hour < 16:
-                    return 'green'   # Lunch (13:00–15:59)
-                elif 19 <= hour < 22:
-                    return 'purple'  # Dinner (19:00–21:59)
-                else:
-                    return 'gray'    # Other
-
-            data['color'] = data['hour'].apply(get_color)  # Assign colors based on hour
 
             fig, ax = plt.subplots(figsize=(8, 6))
             scatter = ax.scatter(
-                data.iloc[:, 0],  # indoor
-                data.iloc[:, 1],  # outdoor
-                c=data['color'],  # Use the assigned colors
+                data['hour'],  # Number of hours on the x-axis
+                data[pollutant],  # Indoor pollutant data on the y-axis
+                c=data['hour'],  # Color based on the hour
+                cmap='viridis',  # Use a colormap for better visualization
                 alpha=0.7
             )
 
-            ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()} (Colored by Time of Day)", fontsize=14)
-            ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
-            ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
+            ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Data)", fontsize=14)
+            ax.set_xlabel("Hour of the Day", fontsize=12)
+            ax.set_ylabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
             ax.grid(True)
 
-            # Custom legend
-            from matplotlib.lines import Line2D
-            legend_elements = [
-                Line2D([0], [0], marker='o', color='w', label='Breakfast Time (9–12)', markerfacecolor='orange', markersize=8),
-                Line2D([0], [0], marker='o', color='w', label='Lunch Time (13–15)', markerfacecolor='green', markersize=8),
-                Line2D([0], [0], marker='o', color='w', label='Dinner Time (19–21)', markerfacecolor='purple', markersize=8),
-                Line2D([0], [0], marker='o', color='w', label='Other', markerfacecolor='gray', markersize=8)
-            ]
-            ax.legend(handles=legend_elements, title="Time of Day")
+            # Add a colorbar to indicate the hour
+            cbar = fig.colorbar(scatter, ax=ax)
+            cbar.set_label("Hour of the Day", fontsize=12)
 
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
