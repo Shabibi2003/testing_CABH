@@ -206,7 +206,7 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         st.pyplot(fig)
         all_figs[f"{feature}_heatmap"] = fig
 
-def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
+def plot_indoor_vs_hour_scatter(indoor_df, pollutants, year, month, all_figs):
     # Ensure datetime is datetime type and localized if needed
     # indoor_df.index = pd.to_datetime(indoor_df.index)
 
@@ -238,42 +238,55 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
 
     #         st.pyplot(fig)
     #         all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
-    indoor_df.index = pd.to_datetime(indoor_df.index)
+    # Ensure datetime index and drop rows with missing values
+    indoor_df = indoor_df.copy()
+    indoor_df = indoor_df.dropna(subset=pollutants)
+    indoor_df = indoor_df[~indoor_df.index.duplicated(keep='first')]
 
-    # Step 1: Resample to hourly average
-    indoor_df_hourly = indoor_df.resample('H').mean()
+    # Create a new column for hour
+    indoor_df['hour'] = indoor_df.index.hour
+
+    # Define time categories
+    def time_period(hour):
+        if 6 <= hour < 9:
+            return 'Morning'
+        elif 9 <= hour < 12:
+            return 'Breakfast'
+        elif 12 <= hour < 15:
+            return 'Lunch'
+        elif 19 <= hour < 22:
+            return 'Dinner'
+        else:
+            return 'Other'
+
+    indoor_df['time_category'] = indoor_df['hour'].apply(time_period)
+
+    color_map = {
+        'Morning': 'skyblue',
+        'Breakfast': 'orange',
+        'Lunch': 'green',
+        'Dinner': 'red',
+        'Other': 'gray'
+    }
 
     for pollutant in pollutants:
-        if pollutant in indoor_df_hourly.columns:
-            data = indoor_df_hourly[[pollutant]].dropna()
+        if pollutant not in indoor_df.columns:
+            continue
 
-            # Step 2: Extract hour of day
-            data['hour'] = data.index.hour
+        fig, ax = plt.subplots(figsize=(10, 6))
+        for category, group in indoor_df.groupby('time_category'):
+            ax.scatter(group['hour'], group[pollutant], 
+                       color=color_map.get(category, 'black'), 
+                       label=category, alpha=0.6)
 
-            # Step 3: Group by hour and take average across all days
-            hourly_avg = data.groupby('hour')[pollutant].mean().reset_index()
+        ax.set_title(f"{pollutant.upper()} vs Hour of Day ({calendar.month_name[month]} {year})", fontsize=14)
+        ax.set_xlabel("Hour of Day", fontsize=12)
+        ax.set_ylabel(pollutant.upper(), fontsize=12)
+        ax.legend(title="Time Category")
+        ax.grid(True)
+        st.pyplot(fig)
+        all_figs[f"{pollutant}_vs_hour_scatter"] = fig
 
-            # Plot
-            fig, ax = plt.subplots(figsize=(8, 6))
-            scatter = ax.scatter(
-                hourly_avg['hour'],
-                hourly_avg[pollutant],
-                c=hourly_avg['hour'],
-                cmap='viridis',
-                alpha=0.7
-            )
-
-            ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Avg)", fontsize=14)
-            ax.set_xlabel("Hour of the Day", fontsize=12)
-            ax.set_ylabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
-            ax.set_xticks(range(0, 24))
-            ax.grid(True)
-
-            cbar = fig.colorbar(scatter, ax=ax)
-            cbar.set_label("Hour of the Day", fontsize=12)
-
-            st.pyplot(fig)
-            all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
 
 
 # Function to plot yearly data for residential buildings divided into seasons
@@ -464,7 +477,8 @@ if st.button("Generate Charts"):
                 # plot_indoor_vs_hour_scatter(indoor_df_month, ['aqi', 'pm10', 'pm25', 'co2', 'voc'], year, selected_month, all_figs)
                 pollutants = ["aqi", "pm10", "pm25"]
                 # plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, pollutants, all_figs)
-                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, pollutants, all_figs)
+                plot_indoor_vs_hour_scatter(indoor_df_month, pollutants, year, selected_month, all_figs)
+
 
 
             else:
