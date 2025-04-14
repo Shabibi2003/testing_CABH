@@ -229,6 +229,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             ax.set_title(f"Hourly Avg: Indoor {pollutant.upper()} (Hours vs Data)", fontsize=14)
             ax.set_xlabel("Hour of the Day", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
+            ax.set_xticks(range(0, 24))  # Ensure x-axis shows all hours
             ax.grid(True)
 
             # Add a colorbar to indicate the hour
