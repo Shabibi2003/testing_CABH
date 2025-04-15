@@ -206,9 +206,8 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df_hourly, pollutants, all_figs):
     # Resample to hourly averages for the entire month
-    indoor_df_hourly = indoor_df.resample('H').mean()
-    outdoor_df_hourly = outdoor_df.resample('H').mean()
-
+    # indoor_df_hourly = indoor_df.resample('H').mean()
+    # outdoor_df_hourly = outdoor_df.resample('H').mean()
     for pollutant in pollutants:
         if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
             # Merge indoor and outdoor data on hourly averages
