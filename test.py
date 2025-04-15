@@ -326,13 +326,13 @@ if st.button("Generate Charts"):
                 st.stop()
 
             # Query to fetch indoor data for selected month
-            # indoor_query_month = """
-            # SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
-            # FROM reading_db
-            # WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
-            # """
-            # cursor.execute(indoor_query_month, (device_id, year, selected_month))
-            # indoor_rows = cursor.fetchall()
+            indoor_query_month = """
+            SELECT datetime, pm25, pm10, aqi, co2, voc, temp, humidity
+            FROM reading_db
+            WHERE deviceID = %s AND YEAR(datetime) = %s AND MONTH(datetime) = %s;
+            """
+            cursor.execute(indoor_query_month, (device_id, year, selected_month))
+            indoor_rows = cursor.fetchall()
 
             # Query to fetch all indoor data for the year (for seasonal trends)
             indoor_query_year = """
@@ -341,7 +341,7 @@ if st.button("Generate Charts"):
             WHERE deviceID = %s AND YEAR(datetime) = %s;
             """
             cursor.execute(indoor_query_year, (device_id, year))
-            indoor_rows = cursor.fetchall()
+            indoor_rows_year = cursor.fetchall()
 
             # Query to fetch outdoor data for selected month
             outdoor_query = """
@@ -419,8 +419,8 @@ if st.button("Generate Charts"):
                 st.warning("No data found for the given Device ID and selected month.")
 
             # Generate seasonal line chart using all-year data
-            if indoor_rows:
-                indoor_df_year = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+            if indoor_rows_year:
+                indoor_df_year = pd.DataFrame(indoor_rows_year, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 indoor_df_year['datetime'] = pd.to_datetime(indoor_df_year['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df_year.set_index('datetime', inplace=True)
 
