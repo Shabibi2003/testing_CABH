@@ -211,18 +211,50 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
 
     for pollutant in pollutants:
         if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
-            data = pd.merge(indoor_df_hourly[[pollutant]], outdoor_df_hourly[[pollutant]], left_index=True, right_index=True, how='inner')
+            data = pd.merge(indoor_df_hourly[[pollutant]], outdoor_df_hourly[[pollutant]],
+                            left_index=True, right_index=True, how='inner')
             if data.empty:
                 continue
 
+            # Add a column for hour of the day
+            data['hour'] = data.index.hour
+
+            # Assign time slots and colors
+            def get_time_slot(hour):
+                if 9 <= hour < 12:
+                    return 'Breakfast'
+                elif 13 <= hour < 15:
+                    return 'Lunch'
+                elif 19 <= hour < 21:
+                    return 'Dinner'
+                else:
+                    return None
+
+            data['time_slot'] = data['hour'].apply(get_time_slot)
+
+            # Define colors
+            color_map = {
+                'Breakfast': 'green',
+                'Lunch': 'blue',
+                'Dinner': 'red'
+            }
+
             fig, ax = plt.subplots(figsize=(8, 6))
-            ax.scatter(data[pollutant + '_x'], data[pollutant + '_y'], color='purple', alpha=0.7)
-            ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
+
+            for slot in ['Breakfast', 'Lunch', 'Dinner']:
+                slot_data = data[data['time_slot'] == slot]
+                if not slot_data.empty:
+                    ax.scatter(slot_data.iloc[:, 0], slot_data.iloc[:, 1],
+                               color=color_map[slot], label=slot, alpha=0.7)
+
+            ax.set_title(f"Indoor vs Outdoor - {pollutant.upper()} (by Time Slot)", fontsize=14)
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
             ax.grid(True)
+            ax.legend(title="Time of Day")
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
+
 
 # Function to plot yearly data for residential buildings divided into seasons
 def plot_residential_seasonal_line_chart(indoor_df, pollutant, year, all_figs):
