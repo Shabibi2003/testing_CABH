@@ -205,46 +205,23 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         all_figs[f"{feature}_heatmap"] = fig
 
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
-    # Resample to hourly averages
+    # Resample to hourly averages for the entire month
     indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
-    # Add a column for cooking hours
-    indoor_df_hourly['cooking_hours'] = indoor_df_hourly.index.hour.map(
-        lambda h: 1 if 9 <= h <= 12 else 2 if 14 <= h <= 16 else 3 if 19 <= h <= 21 else 0
-    )
-
     for pollutant in pollutants:
         if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
-            data = pd.merge(
-                indoor_df_hourly[[pollutant, 'cooking_hours']],
-                outdoor_df_hourly[[pollutant]],
-                left_index=True,
-                right_index=True,
-                how='inner',
-                suffixes=('_indoor', '_outdoor')
-            )
+            # Merge indoor and outdoor data on hourly averages
+            data = pd.merge(indoor_df_hourly[[pollutant]], outdoor_df_hourly[[pollutant]], left_index=True, right_index=True, how='inner')
             if data.empty:
                 continue
 
             fig, ax = plt.subplots(figsize=(8, 6))
-            scatter = ax.scatter(
-                data[f"{pollutant}_indoor"],
-                data[f"{pollutant}_outdoor"],
-                c=data['cooking_hours'],
-                cmap='viridis',
-                alpha=0.7
-            )
+            ax.scatter(data.iloc[:, 0], data.iloc[:, 1], color='purple', alpha=0.7)
             ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
             ax.grid(True)
-
-            # Add a colorbar for cooking hours
-            cbar = plt.colorbar(scatter, ax=ax, ticks=[0, 1, 2, 3])
-            cbar.ax.set_yticklabels(['Non-Cooking', 'Breakfast', 'Lunch', 'Dinner'])
-            cbar.set_label('Cooking Hours', fontsize=12)
-
             st.pyplot(fig)
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
 
