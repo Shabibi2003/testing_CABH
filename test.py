@@ -377,6 +377,11 @@ if st.button("Generate Charts"):
 
                 # Resample to daily averages after filtering out zero values
                 indoor_df = indoor_df.resample('D').mean()
+
+                indoor_df_hourly = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                indoor_df_hourly['datetime'] = pd.to_datetime(indoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                indoor_df_hourly.set_index('datetime', inplace=True)
+
                 indoor_df_hourly = indoor_df.resample('H').mean()
 
                 # Process outdoor data
@@ -390,6 +395,11 @@ if st.button("Generate Charts"):
 
                 # Resample to daily averages after filtering out zero values
                 outdoor_df = outdoor_df.resample('D').mean()
+
+                outdoor_df_hourly = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                outdoor_df_hourly['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                outdoor_df_hourly.set_index('datetime', inplace=True)
+                
                 outdoor_df_hourly = outdoor_df.resample('H').mean()
 
                 # Generate heatmaps and other plots using one-month data
