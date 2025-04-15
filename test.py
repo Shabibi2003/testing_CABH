@@ -389,7 +389,7 @@ if st.button("Generate Charts"):
                 outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
 
                 # Resample to hourly averages after filtering out zero values
-                outdoor_df = outdoor_df.resample('H').mean()
+                outdoor_df_hourly = outdoor_df.resample('H').mean()
 
                 # Generate heatmaps and other plots using one-month data
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
@@ -406,7 +406,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
+                plot_indoor_vs_outdoor_scatter(indoor_df_month, outdoor_df_hourly, ['aqi', 'pm10', 'pm25'], all_figs)
 
 
             else:
