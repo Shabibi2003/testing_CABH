@@ -372,24 +372,24 @@ if st.button("Generate Charts"):
                 indoor_df_month['datetime'] = pd.to_datetime(indoor_df_month['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df_month.set_index('datetime', inplace=True)
 
-                # Filter indoor data: Remove rows with zero in specific columns before resampling
+                # Filter indoor data: Remove rows with zero in specific columns
                 columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
                 indoor_df_month = indoor_df_month[(indoor_df_month[columns_to_check_indoor] != 0).all(axis=1)]
 
-                # Resample to daily averages after filtering out zero values
-                indoor_df_month = indoor_df_month.resample('D').mean()
+                # Resample to hourly averages after filtering out zero values
+                indoor_df_month = indoor_df_month.resample('H').mean()
 
                 # Process outdoor data
                 outdoor_df = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 outdoor_df['datetime'] = pd.to_datetime(outdoor_df['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 outdoor_df.set_index('datetime', inplace=True)
 
-                # Filter outdoor data: Remove rows with zero in specific columns before resampling
+                # Filter outdoor data: Remove rows with zero in specific columns
                 columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  # Modify as needed
                 outdoor_df = outdoor_df[(outdoor_df[columns_to_check_outdoor] != 0).all(axis=1)]
 
-                # Resample to daily averages after filtering out zero values
-                outdoor_df = outdoor_df.resample('D').mean()
+                # Resample to hourly averages after filtering out zero values
+                outdoor_df = outdoor_df.resample('H').mean()
 
                 # Generate heatmaps and other plots using one-month data
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
