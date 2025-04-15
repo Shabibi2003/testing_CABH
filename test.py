@@ -367,14 +367,18 @@ if st.button("Generate Charts"):
 
             if indoor_rows_month and outdoor_rows:
                 # Process indoor data for the selected month
+                # Process indoor data for the selected month
                 indoor_df_month = pd.DataFrame(indoor_rows_month, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
                 indoor_df_month['datetime'] = pd.to_datetime(indoor_df_month['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
                 indoor_df_month.set_index('datetime', inplace=True)
-
+                
+                # Remove duplicate indices
+                indoor_df_month = indoor_df_month[~indoor_df_month.index.duplicated(keep='first')]
+                
                 # Filter indoor data: Remove rows with zero in specific columns
                 columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
                 indoor_df_month = indoor_df_month[(indoor_df_month[columns_to_check_indoor] != 0).all(axis=1)]
-
+                
                 # Resample to hourly averages after filtering out zero values
                 indoor_df_month_hourly = indoor_df_month.resample('H').mean()
 
