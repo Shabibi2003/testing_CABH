@@ -121,6 +121,17 @@ pollutant_display_names = {
 
 # Function to plot and display line charts for pollutants
 def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names, all_figs):
+    # Define thresholds for pollutants
+    thresholds = {
+        'aqi': 500,
+        'pm25': 250,
+        'pm10': 350,
+        'co2': 900,
+        'voc': 500,
+        'temp': 18,
+        'humidity': 70
+    }
+
     combined_df = pd.concat(
         [indoor_df.add_suffix('_indoor'), outdoor_df.add_suffix('_outdoor')],
         axis=1
@@ -144,6 +155,10 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names,
         # - the column exists
         if pollutant.lower() not in ['co2', 'voc'] and outdoor_col in combined_df.columns:
             combined_df[outdoor_col].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
+
+        # Add a horizontal red line for the threshold if it exists
+        if pollutant in thresholds:
+            ax.axhline(y=thresholds[pollutant], color='red', linestyle='--', linewidth=1.5, label=f"Threshold ({thresholds[pollutant]})")
 
         ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor vs Outdoor", fontsize=14)
         ax.set_xlabel("Date", fontsize=12)
