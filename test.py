@@ -402,8 +402,19 @@ if st.button("Generate Charts"):
 
                 columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
                 indoor_df_hourly = indoor_df_hourly[(indoor_df_hourly[columns_to_check_indoor] != 0).all(axis=1)]
-
                 indoor_df_hourly = indoor_df_hourly.resample('H').mean()
+
+                outdoor_df = outdoor_df.resample('D').mean()
+                outdoor_df_hourly = pd.DataFrame(outdoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                outdoor_df_hourly['datetime'] = pd.to_datetime(outdoor_df_hourly['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                outdoor_df_hourly.set_index('datetime', inplace=True)
+
+                # Filter outdoor data: Remove rows with zero in specific columns before resampling
+                columns_to_check_outdoor = ['pm25', 'pm10', 'aqi']  
+                outdoor_df_hourly = outdoor_df_hourly[(outdoor_df_hourly[columns_to_check_outdoor] != 0).all(axis=1)]
+                # Resample to hourly averages after filtering out zero values
+                outdoor_df_hourly = outdoor_df_hourly.resample('H').mean()
+
                 # Generate heatmaps and other plots
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month, all_figs)
@@ -412,7 +423,7 @@ if st.button("Generate Charts"):
                 plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names, all_figs)
 
                 st.markdown("<h3 style='text-align:center;'>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df_hourly, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
+                plot_indoor_vs_outdoor_scatter(indoor_df_hourly, outdoor_df_hourly, ['aqi', 'pm10', 'pm25'], all_figs)
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
