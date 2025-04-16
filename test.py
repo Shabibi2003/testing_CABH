@@ -252,9 +252,9 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         st.pyplot(fig)
         all_figs[f"{feature}_heatmap"] = fig
 
-def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
+def plot_indoor_vs_outdoor_scatter(indoor_df_year, outdoor_df, pollutants, all_figs):
     # Resample to hourly averages
-    indoor_df_hourly = indoor_df.resample('H').mean()
+    indoor_df_hourly = indoor_df_year.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
     for pollutant in pollutants:
