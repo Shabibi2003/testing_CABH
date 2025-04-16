@@ -394,7 +394,7 @@ if st.button("Generate Charts"):
                 # Process data
                 indoor_df = process_data(indoor_rows, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi', 'temp'])
                 outdoor_df = process_data(outdoor_rows, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi'])
-
+                indoor_df_year = process_data(indoor_rows_year, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi', 'temp'])
                 # Generate heatmaps and other plots
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month, all_figs)
