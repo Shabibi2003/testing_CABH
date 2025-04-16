@@ -395,6 +395,15 @@ if st.button("Generate Charts"):
                 indoor_df = process_data(indoor_rows, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi', 'temp'])
                 outdoor_df = process_data(outdoor_rows, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi'])
                 indoor_df_year = process_data(indoor_rows_year, resample_freq='D', columns_to_check=['pm25', 'pm10', 'aqi', 'temp'])
+
+                indoor_df_hourly = pd.DataFrame(indoor_rows, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                indoor_df_hourly['datetime'] = pd.to_datetime(indoor_df_hourly['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                indoor_df_hourly.set_index('datetime', inplace=True)
+
+                columns_to_check_indoor = ['pm25', 'pm10', 'aqi', 'temp']  # Modify as needed
+                indoor_df_hourly = indoor_df_hourly[(indoor_df_hourly[columns_to_check_indoor] != 0).all(axis=1)]
+
+                indoor_df_hourly = indoor_df_hourly.resample('H').mean()
                 # Generate heatmaps and other plots
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month, all_figs)
