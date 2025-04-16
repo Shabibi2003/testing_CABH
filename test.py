@@ -412,7 +412,7 @@ if st.button("Generate Charts"):
                 plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names, all_figs)
 
                 st.markdown("<h3 style='text-align:center;'>Indoor vs Outdoor Scatter Plots</h3>", unsafe_allow_html=True)
-                plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
+                plot_indoor_vs_outdoor_scatter(indoor_df_hourly, outdoor_df, ['aqi', 'pm10', 'pm25'], all_figs)
 
             else:
                 st.warning("No data found for the given Device ID and selected month.")
