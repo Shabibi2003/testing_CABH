@@ -287,6 +287,13 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
                 + 0.00085282 * T_f * R ** 2 - 0.00000199 * T_f ** 2 * R ** 2)
         return (HI_f - 32) * 5/9  # Convert back to Celsius
 
+    # Heat Index boundaries and labels
+    boundaries = [0, 27, 32, 41, 54, 100]
+    labels = ['Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']
+    color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000']
+    cmap = ListedColormap(color_list)
+    norm = BoundaryNorm(boundaries, cmap.N)
+
     # Calculate daily Heat Index
     for day in range(1, num_days + 1):
         if day in daily_averages.index.day:
@@ -301,15 +308,22 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
 
     # Plot Heat Index heatmap
     fig, ax = plt.subplots(figsize=(10, 6))
-    cmap = sns.color_palette("coolwarm", as_cmap=True)
-    sns.heatmap(calendar_data, annot=True, fmt=".1f", cmap=cmap, cbar=True,
-                xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    sns.heatmap(calendar_data, annot=True, fmt=".1f", cmap=cmap, norm=norm,
+                cbar=False, xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 yticklabels=False, ax=ax, linewidths=1, linecolor='black', annot_kws={"size": 14})
     ax.xaxis.tick_top()
     ax.set_title(f"Daily Average Heat Index (°C) - {calendar.month_name[month]} {year}", fontsize=14, pad=35)
     ax.set_xlabel(f"{calendar.month_name[month]} {year}", fontsize=12)
     ax.set_ylabel("Week", fontsize=12)
     ax.set_yticks([])
+
+    # Add color bar
+    fig.subplots_adjust(right=0.85)
+    cbar_ax = fig.add_axes([0.87, 0.1, 0.03, 0.8])
+    cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax, orientation='vertical')
+    cbar.set_ticks([(b + b_next) / 2 for b, b_next in zip(boundaries[:-1], boundaries[1:])])
+    cbar.set_ticklabels(labels)
+    cbar.ax.tick_params(labelsize=12)
 
     st.pyplot(fig)
     all_figs[f"heat_index_heatmap_{year}_{month}"] = fig
