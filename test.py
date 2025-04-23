@@ -281,10 +281,11 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
     # Heat Index formula
     def calculate_heat_index(T, R):
         T_f = T * 9/5 + 32  # Convert Celsius to Fahrenheit
-        return (-42.379 + 2.04901523 * T_f + 10.14333127 * R
+        HI_f = (-42.379 + 2.04901523 * T_f + 10.14333127 * R
                 - 0.22475541 * T_f * R - 0.00683783 * T_f ** 2
                 - 0.05481717 * R ** 2 + 0.00122874 * T_f ** 2 * R
                 + 0.00085282 * T_f * R ** 2 - 0.00000199 * T_f ** 2 * R ** 2)
+        return (HI_f - 32) * 5/9  # Convert back to Celsius
 
     # Calculate daily Heat Index
     for day in range(1, num_days + 1):
@@ -301,11 +302,11 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
     # Plot Heat Index heatmap
     fig, ax = plt.subplots(figsize=(10, 6))
     cmap = sns.color_palette("coolwarm", as_cmap=True)
-    sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, cbar=True,
+    sns.heatmap(calendar_data, annot=True, fmt=".1f", cmap=cmap, cbar=True,
                 xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 yticklabels=False, ax=ax, linewidths=1, linecolor='black', annot_kws={"size": 14})
     ax.xaxis.tick_top()
-    ax.set_title(f"Daily Average Heat Index - {calendar.month_name[month]} {year}", fontsize=14, pad=35)
+    ax.set_title(f"Daily Average Heat Index (°C) - {calendar.month_name[month]} {year}", fontsize=14, pad=35)
     ax.set_xlabel(f"{calendar.month_name[month]} {year}", fontsize=12)
     ax.set_ylabel("Week", fontsize=12)
     ax.set_yticks([])
