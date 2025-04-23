@@ -121,17 +121,6 @@ pollutant_display_names = {
 
 # Function to plot and display line charts for pollutants
 def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names, all_figs):
-    # Define thresholds for pollutants
-    thresholds = {
-        'aqi': 500,
-        'pm25': 250,
-        'pm10': 350,
-        'co2': 900,
-        'voc': 500,
-        'temp': 18,
-        'humidity': 70
-    }
-
     combined_df = pd.concat(
         [indoor_df.add_suffix('_indoor'), outdoor_df.add_suffix('_outdoor')],
         axis=1
@@ -155,10 +144,6 @@ def plot_and_display_line_charts(indoor_df, outdoor_df, pollutant_display_names,
         # - the column exists
         if pollutant.lower() not in ['co2', 'voc'] and outdoor_col in combined_df.columns:
             combined_df[outdoor_col].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
-
-        # Add a horizontal red line for the threshold if it exists
-        if pollutant in thresholds:
-            ax.axhline(y=thresholds[pollutant], color='red', linestyle='--', linewidth=1.5, label=f"Threshold ({thresholds[pollutant]})")
 
         ax.set_title(f"{pollutant_display_names[pollutant]} - Indoor vs Outdoor", fontsize=14)
         ax.set_xlabel("Date", fontsize=12)
@@ -247,7 +232,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             if data.empty:
                 continue
 
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(8, 6))
             ax.scatter(data[pollutant + '_x'], data[pollutant + '_y'], color='purple', alpha=0.7)
             ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
@@ -257,7 +242,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             all_figs[f"{pollutant}_hourly_scatter_plot"] = fig
 
 # Function to plot yearly data for residential buildings divided into seasons
-def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
+def plot_residential_seasonal_line_chart(indoor_df, pollutant, year, all_figs):
     seasons = {
         "Spring": [2, 3, 4],
         "Summer": [5, 6, 7],
@@ -266,25 +251,67 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
     }
 
     yearly_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
-    
-    for pollutant in pollutants:
-        fig, ax = plt.subplots(figsize=(10, 6))
-        for season, months in seasons.items():
-            seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
-            if not seasonal_data.empty:
-                seasonal_data = seasonal_data.resample('D').mean()
-                ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
-            else:
-                ax.plot([], [], label=f"{season} (No Data)")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for season, months in seasons.items():
+        seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
+        if not seasonal_data.empty:
+            seasonal_data = seasonal_data.resample('D').mean()
+            ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+        else:
+            ax.plot([], [], label=f"{season} (No Data)")
 
-        ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
-        ax.set_xlabel("Date", fontsize=12)
-        ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
-        ax.legend(title="Season")
-        ax.grid(True)
-        ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
-        st.pyplot(fig)
-        all_figs[f"{pollutant}_seasonal_chart_{year}"] = fig
+    ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+    ax.set_xlabel("Date", fontsize=12)
+    ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+    ax.legend(title="Season")
+    ax.grid(True)
+    ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
+    st.pyplot(fig)
+    all_figs[f"{pollutant}_seasonal_chart_{year}"] = fig
+
+def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
+    """
+    Generate a heatmap for the Heat Index using daily average temperature and humidity.
+    """
+    num_days = calendar.monthrange(year, month)[1]
+    first_day_of_month = calendar.monthrange(year, month)[0]
+    calendar_data = np.full((5, 7), np.nan)
+    daily_averages = indoor_df.resample('D').mean()
+
+    # Heat Index formula
+    def calculate_heat_index(T, R):
+        T_f = T * 9/5 + 32  # Convert Celsius to Fahrenheit
+        return (-42.379 + 2.04901523 * T_f + 10.14333127 * R
+                - 0.22475541 * T_f * R - 0.00683783 * T_f ** 2
+                - 0.05481717 * R ** 2 + 0.00122874 * T_f ** 2 * R
+                + 0.00085282 * T_f * R ** 2 - 0.00000199 * T_f ** 2 * R ** 2)
+
+    # Calculate daily Heat Index
+    for day in range(1, num_days + 1):
+        if day in daily_averages.index.day:
+            temp = daily_averages.loc[daily_averages.index.day == day, 'temp'].mean()
+            humidity = daily_averages.loc[daily_averages.index.day == day, 'humidity'].mean()
+            if not np.isnan(temp) and not np.isnan(humidity):
+                heat_index = calculate_heat_index(temp, humidity)
+                week_row = (day + first_day_of_month - 1) // 7
+                week_col = (day + first_day_of_month - 1) % 7
+                if week_row < 5:
+                    calendar_data[week_row, week_col] = heat_index
+
+    # Plot Heat Index heatmap
+    fig, ax = plt.subplots(figsize=(10, 6))
+    cmap = sns.color_palette("coolwarm", as_cmap=True)
+    sns.heatmap(calendar_data, annot=True, fmt=".0f", cmap=cmap, cbar=True,
+                xticklabels=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                yticklabels=False, ax=ax, linewidths=1, linecolor='black', annot_kws={"size": 14})
+    ax.xaxis.tick_top()
+    ax.set_title(f"Daily Average Heat Index - {calendar.month_name[month]} {year}", fontsize=14, pad=35)
+    ax.set_xlabel(f"{calendar.month_name[month]} {year}", fontsize=12)
+    ax.set_ylabel("Week", fontsize=12)
+    ax.set_yticks([])
+
+    st.pyplot(fig)
+    all_figs[f"heat_index_heatmap_{year}_{month}"] = fig
 
 
 st.markdown("""
@@ -435,6 +462,11 @@ if st.button("Generate Charts"):
                 features = ['pm25', 'pm10', 'aqi', 'co2', 'voc', 'temp', 'humidity']
                 plot_and_display_feature_heatmaps(indoor_df, features, year, selected_month, all_figs)
 
+                # Generate Heat Index heatmap
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Heat Index Heatmap</h3>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                plot_and_display_heat_index_heatmap(indoor_df, year, selected_month, all_figs)
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
@@ -461,7 +493,7 @@ if st.button("Generate Charts"):
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("<h3 style='font-size:30px; text-align:center; font-weight:bold;'>Seasonal Line Chart for Residential Buildings</h3>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                plot_residential_seasonal_line_chart(indoor_df_year, ['aqi', 'pm10', 'pm25'], year, all_figs)
+                plot_residential_seasonal_line_chart(indoor_df_year, "aqi", year, all_figs)
 
 
             else:
