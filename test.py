@@ -365,7 +365,6 @@ def calculate_heat_index(T, R):
 #-------------------------------------------------------------------------------
 # 2. Function to calculate and display the hourly heat index chart
 def plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs):
-    import streamlit as st
 
     # Ensure temp and humidity exist for both indoor and outdoor data
     if 'temp' not in indoor_df_hourly.columns or 'humidity' not in indoor_df_hourly.columns:
@@ -391,8 +390,8 @@ def plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs):
 
     # Plot the hourly heat index line chart
     fig, ax = plt.subplots(figsize=(12, 6))
-    indoor_df_hourly['heat_index'].plot(ax=ax, color='darkred', linewidth=2, label="Indoor Heat Index")
-    outdoor_df_hourly['heat_index'].plot(ax=ax, color='blue', linewidth=2, linestyle='--', label="Outdoor Heat Index")
+    indoor_df_hourly['heat_index'].plot(ax=ax, color='blue', linewidth=2, label="Indoor Heat Index")
+    outdoor_df_hourly['heat_index'].plot(ax=ax, color='orange', linewidth=2, label="Outdoor Heat Index")
     ax.set_title("Hourly Average Heat Index (°C)", fontsize=16)
     ax.set_xlabel("Time", fontsize=12)
     ax.set_ylabel("Heat Index (°C)", fontsize=12)
