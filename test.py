@@ -107,6 +107,7 @@ indoor_to_outdoor_mapping = {
     "1202240028": "DELDPCC016",
     "1202240010": "DELDPCC016",
     "1202240012": "DELDPCC016",
+    "1201240075":"CPCB1703205345"
 }
 
 pollutant_display_names = {
