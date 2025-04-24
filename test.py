@@ -364,16 +364,26 @@ def calculate_heat_index(T, R):
     return (HI_f - 32) * 5 / 9  # Return in Celsius
 #-------------------------------------------------------------------------------
 # 2. Function to calculate and display the hourly heat index chart
-def plot_hourly_heat_index_chart(indoor_df_hourly, all_figs):
+def plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs):
     import streamlit as st
 
-    # Ensure temp and humidity exist
+    # Ensure temp and humidity exist for both indoor and outdoor data
     if 'temp' not in indoor_df_hourly.columns or 'humidity' not in indoor_df_hourly.columns:
-        st.warning("Temperature and Humidity data are required to calculate Heat Index.")
+        st.warning("Indoor Temperature and Humidity data are required to calculate Heat Index.")
+        return
+    if 'temp' not in outdoor_df_hourly.columns or 'humidity' not in outdoor_df_hourly.columns:
+        st.warning("Outdoor Temperature and Humidity data are required to calculate Heat Index.")
         return
 
-    # Calculate Heat Index column
+    # Calculate Heat Index column for indoor data
     indoor_df_hourly['heat_index'] = indoor_df_hourly.apply(
+        lambda row: calculate_heat_index(row['temp'], row['humidity'])
+        if not np.isnan(row['temp']) and not np.isnan(row['humidity']) else np.nan,
+        axis=1
+    )
+
+    # Calculate Heat Index column for outdoor data
+    outdoor_df_hourly['heat_index'] = outdoor_df_hourly.apply(
         lambda row: calculate_heat_index(row['temp'], row['humidity'])
         if not np.isnan(row['temp']) and not np.isnan(row['humidity']) else np.nan,
         axis=1
@@ -381,10 +391,12 @@ def plot_hourly_heat_index_chart(indoor_df_hourly, all_figs):
 
     # Plot the hourly heat index line chart
     fig, ax = plt.subplots(figsize=(12, 6))
-    indoor_df_hourly['heat_index'].plot(ax=ax, color='darkred', linewidth=2)
+    indoor_df_hourly['heat_index'].plot(ax=ax, color='darkred', linewidth=2, label="Indoor Heat Index")
+    outdoor_df_hourly['heat_index'].plot(ax=ax, color='blue', linewidth=2, linestyle='--', label="Outdoor Heat Index")
     ax.set_title("Hourly Average Heat Index (°C)", fontsize=16)
     ax.set_xlabel("Time", fontsize=12)
     ax.set_ylabel("Heat Index (°C)", fontsize=12)
+    ax.legend()
     ax.grid(True)
 
     # Display in Streamlit
@@ -628,7 +640,7 @@ if st.button("Generate Charts"):
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Hourly Average Heat Index</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
-                    plot_hourly_heat_index_chart(indoor_df_hourly, all_figs)
+                    plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
