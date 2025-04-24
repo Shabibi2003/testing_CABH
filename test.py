@@ -1,14 +1,14 @@
 import streamlit as st
-    import pandas as pd
-    import mysql.connector
-    from datetime import datetime
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import calendar
-    from matplotlib.colors import ListedColormap, BoundaryNorm
-    from matplotlib.backends.backend_pdf import PdfPages
-    from io import BytesIO
+import pandas as pd
+import mysql.connector
+from datetime import datetime
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import calendar
+from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.backends.backend_pdf import PdfPages
+from io import BytesIO
 
 
     def create_pdf_from_figs(fig_dict):
