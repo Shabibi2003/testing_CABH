@@ -12,6 +12,12 @@ import io
 from io import BytesIO
 from PIL import Image
 
+st.set_page_config(
+    page_title="Indoor Air Quality Dashboard",
+    page_icon="🌫️",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
 
 def create_pdf_from_figs(fig_dict):
     pdf_buffer = BytesIO()
