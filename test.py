@@ -22,25 +22,6 @@ def create_pdf_from_figs(fig_dict):
     return pdf_buffer
 
 
-# def calculate_heat_index(temp_c, rh):
-#     """
-#     Calculate the heat index in Celsius using temperature (Celsius) and relative humidity (%).
-#     """
-#     # Convert Celsius to Fahrenheit
-#     T = temp_c * 9 / 5 + 32
-#     R = rh
-
-#     # Apply full formula (valid only for T >= 80°F and RH >= 40%)
-#     HI = (-42.379 + 2.04901523 * T + 10.14333127 * R
-#           - 0.22475541 * T * R - 0.00683783 * T ** 2
-#           - 0.05481717 * R ** 2 + 0.00122874 * T ** 2 * R
-#           + 0.00085282 * T * R ** 2 - 0.00000199 * T ** 2 * R ** 2)
-
-#     # Convert back to Celsius
-#     HI_C = (HI - 32) * 5 / 9
-#     return HI_C
-
-
 # Database connection details
 host = "139.59.34.149"
 user = "neemdb"
@@ -434,6 +415,73 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
         all_figs[f"Heat_Index"] = fig
 
 
+def plot_hourly_heat_index_line_chart(indoor_df, year, month, all_figs):
+    """
+    Plot a line chart of hourly heat index data for the given month and year.
+    """
+    if 'temp' not in indoor_df.columns or 'humidity' not in indoor_df.columns:
+        st.warning("Temperature and humidity data are required to calculate the heat index.")
+        return
+
+    def calculate_heat_index(T, R):
+            # Convert Celsius to Fahrenheit
+            T_f = T * 9 / 5 + 32
+        
+            if T_f < 80:
+                # Simplified Steadman approximation for mild conditions
+                HI_f = 0.5 * (T_f + 61.0 + ((T_f - 68.0) * 1.2) + (R * 0.094))
+            else:
+                # Rothfusz full formula
+                HI_f = (-42.379 + 2.04901523 * T_f + 10.14333127 * R
+                        - 0.22475541 * T_f * R - 0.00683783 * T_f ** 2
+                        - 0.05481717 * R ** 2 + 0.00122874 * T_f ** 2 * R
+                        + 0.00085282 * T_f * R ** 2 - 0.00000199 * T_f ** 2 * R ** 2)
+        
+                # Low humidity adjustment
+                if R < 13 and 80 <= T_f <= 112:
+                    adjustment = ((13 - R) / 4) * ((17 - abs(T_f - 95)) / 17) ** 0.5
+                    HI_f -= adjustment
+        
+                # High humidity adjustment
+                elif R > 85 and 80 <= T_f <= 87:
+                    adjustment = ((R - 85) / 10) * ((87 - T_f) / 5)
+                    HI_f += adjustment
+        
+            # Return Heat Index in Celsius
+            return (HI_f - 32) * 5 / 9
+    # Calculate heat index
+    indoor_df['heat_index'] = calculate_heat_index(indoor_df['temp'], indoor_df['humidity'])
+
+    # Filter data for the selected month and year
+    monthly_data = indoor_df[(indoor_df.index.year == year) & (indoor_df.index.month == month)]
+
+    if monthly_data.empty:
+        st.warning("No data available for the selected month and year.")
+        return
+
+    # Resample to hourly averages
+    hourly_data = monthly_data.resample('H').mean()
+
+    # Plot the line chart
+    fig, ax = plt.subplots(figsize=(10, 6))
+    hourly_data['heat_index'].plot(ax=ax, color='blue', label='Heat Index (Hourly)')
+    ax.set_title(f"Hourly Heat Index - {calendar.month_name[month]} {year}", fontsize=14)
+    ax.set_xlabel("Date and Time", fontsize=12)
+    ax.set_ylabel("Heat Index (°C)", fontsize=12)
+    ax.legend()
+    ax.grid(True)
+
+    # Save and display the chart
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+    buf.seek(0)
+    img = Image.open(buf)
+    img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))  # Scale to 70%
+
+    st.image(img)
+    all_figs["hourly_heat_index_line_chart"] = fig
+
+
     # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)    
 with col1:
@@ -580,6 +628,10 @@ if st.button("Generate Charts"):
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_indoor_vs_outdoor_scatter(indoor_df_hourly, outdoor_df_hourly, ['aqi', 'pm10', 'pm25'], all_figs)
 
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Hourly Heat Index Line Chart</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    plot_hourly_heat_index_line_chart(indoor_df_hourly, year, selected_month, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
