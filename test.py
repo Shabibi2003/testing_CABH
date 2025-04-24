@@ -389,7 +389,7 @@ def plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs):
     )
 
     # Plot the hourly heat index line chart
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     indoor_df_hourly['heat_index'].plot(ax=ax, color='blue', linewidth=2, label="Indoor Heat Index")
     outdoor_df_hourly['heat_index'].plot(ax=ax, color='orange', linewidth=2, label="Outdoor Heat Index")
     ax.set_title("Hourly Average Heat Index (°C)", fontsize=16)
