@@ -289,40 +289,94 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                 all_figs[f"{pollutant}_scatter"] = fig
 
 def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
-        seasons = {
-            "Spring": [2, 3, 4],
-            "Summer": [5, 6, 7],
-            "Autumn": [8, 9, 10],
-            "Winter": [11, 12, 1]
-        }
-    
-        yearly_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
-        
-        for pollutant in pollutants:
-            fig, ax = plt.subplots(figsize=(10, 6))
-            for season, months in seasons.items():
-                seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
-                if not seasonal_data.empty:
-                    seasonal_data = seasonal_data.resample('D').mean()
-                    ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
-                else:
-                    ax.plot([], [], label=f"{season} (No Data)")
-    
-            ax.set_title(f"Annual {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
-            ax.set_xlabel("Date", fontsize=12)
-            ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
-            ax.legend(title="Season")
-            ax.grid(True)
-            ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
-            buf.seek(0)
-            img = Image.open(buf)
-            img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))  # Scale to 70%
-                
-            st.image(img)
-            all_figs[f"{pollutant}_seasonal_line_chart"] = fig
+    seasons = {
+        "Spring": [2, 3, 4],
+        "Summer": [5, 6, 7],
+        "Autumn": [8, 9, 10],
+        "Winter": [11, 12, 1]
+    }
 
+    yearly_df = indoor_df[(indoor_df.index.year == year) | ((indoor_df.index.year == year - 1) & (indoor_df.index.month == 12))]
+
+    for pollutant in pollutants:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        for season, months in seasons.items():
+            seasonal_data = indoor_df[indoor_df.index.month.isin(months)]
+            if not seasonal_data.empty:
+                seasonal_data = seasonal_data.resample('D').mean()
+                ax.plot(seasonal_data.index, seasonal_data[pollutant], label=season)
+            else:
+                ax.plot([], [], label=f"{season} (No Data)")
+
+        ax.set_title(f"Annual {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+        ax.set_xlabel("Date", fontsize=12)
+        ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
+        ax.legend(title="Season")
+        ax.grid(True)
+        ax.set_xlim(indoor_df.index.min(), indoor_df.index.max())
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+        buf.seek(0)
+        img = Image.open(buf)
+        img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))  # Scale to 70%
+
+        st.image(img)
+        all_figs[f"{pollutant}_seasonal_line_chart"] = fig
+
+def plot_and_display_hourly_line_charts(indoor_df_hourly, outdoor_df_hourly, pollutant_display_names, all_figs):
+    thresholds = {
+        'aqi': 300,
+        'pm25': 250,
+        'pm10': 350,
+        'co2': 900,
+        'voc': 500,
+        'temp': 28,
+        'humidity': 70,
+        'heat_index': 41
+    }
+
+    combined_df = pd.concat(
+        [indoor_df_hourly.add_suffix('_indoor'), outdoor_df_hourly.add_suffix('_outdoor')],
+        axis=1
+    )
+
+    for pollutant in pollutant_display_names.keys():
+        indoor_col = f"{pollutant}_indoor"
+        outdoor_col = f"{pollutant}_outdoor"
+
+        # Skip plotting if indoor data doesn't exist
+        if indoor_col not in combined_df.columns:
+            continue
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # Plot indoor data
+        combined_df[indoor_col].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Indoor)", color='blue')
+
+        # Plot outdoor data only if:
+        # - the pollutant is NOT CO2 or VOC
+        # - the column exists
+        if pollutant.lower() not in ['co2', 'voc'] and outdoor_col in combined_df.columns:
+            combined_df[outdoor_col].plot(ax=ax, label=f"{pollutant_display_names[pollutant]} (Outdoor)", color='orange')
+
+        # Add a horizontal red line for the threshold if it exists
+        if pollutant in thresholds:
+            ax.axhline(y=thresholds[pollutant], color='red', linestyle='--', linewidth=1.5, label=f"Threshold ({thresholds[pollutant]})")
+
+        ax.set_title(f"{pollutant_display_names[pollutant]} - Hourly Indoor vs Outdoor", fontsize=14)
+        ax.set_xlabel("Time", fontsize=12)
+        ax.set_ylabel(pollutant_display_names[pollutant], fontsize=12)
+        ax.legend()
+        ax.grid(True)
+
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+        buf.seek(0)
+        img = Image.open(buf)
+        img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))
+
+        st.image(img)
+        all_figs[f"{pollutant}_hourly_line_chart"] = fig
 
 st.markdown("""
         <style>
@@ -643,6 +697,11 @@ if st.button("Generate Charts"):
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Hourly Average Heat Index</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_hourly_heat_index_chart(indoor_df_hourly, outdoor_df_hourly, all_figs)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Hourly Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    plot_and_display_hourly_line_charts(indoor_df_hourly, outdoor_df_hourly, pollutant_display_names, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
