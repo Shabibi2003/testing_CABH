@@ -360,7 +360,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
 
             ax_hist.set_xticks(x)
             ax_hist.set_xticklabels(interval_labels, rotation=30, ha='right')
-            ax_hist.set_title(f"Indoor vs Outdoor - {pollutant.upper()} by Time Interval", fontsize=14)
+            ax_hist.set_title(f"Indoor vs Outdoor - {pollutant.upper()} ", fontsize=14)
             ax_hist.set_xlabel("Time Interval", fontsize=12)
             ax_hist.set_ylabel(f"Avg {pollutant.upper()} Concentration", fontsize=12)
             ax_hist.legend()
