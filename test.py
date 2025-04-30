@@ -644,6 +644,88 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
         st.image(img)
         all_figs[f"Heat_Index"] = fig
 
+def plot_heat_index_distribution(indoor_df_hourly, all_figs):
+    """
+    Creates a bar chart showing the distribution of heat index categories by hours.
+    
+    Parameters:
+    indoor_df_hourly (pd.DataFrame): DataFrame with hourly indoor temperature and humidity data
+    all_figs (dict): Dictionary to store the generated figures
+    """
+    # Calculate heat index for each hour
+    heat_index_values = []
+    
+    for _, row in indoor_df_hourly.iterrows():
+        if pd.notna(row['temp']) and pd.notna(row['humidity']):
+            temp = row['temp']
+            humidity = row['humidity']
+            heat_index = calculate_heat_index(temp, humidity)
+            heat_index_values.append(heat_index)
+    
+    # Define category boundaries and labels
+    boundaries = [0, 27, 32, 41, 54, float('inf')]
+    categories = ['Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']
+    
+    # Initialize category counts
+    category_counts = {cat: 0 for cat in categories}
+    
+    # Count hours in each category
+    for hi_value in heat_index_values:
+        for i, (lower, upper) in enumerate(zip(boundaries[:-1], boundaries[1:])):
+            if lower <= hi_value < upper:
+                category_counts[categories[i]] += 1
+                break
+    
+    # Create bar chart
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Define colors for each category
+    colors = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000']
+    
+    # Create bars
+    bars = ax.bar(
+        categories,
+        [category_counts[cat] for cat in categories],
+        color=colors
+    )
+    
+    # Customize the plot
+    ax.set_title('Distribution of Heat Index Categories', fontsize=14, pad=20)
+    ax.set_xlabel('Heat Index Categories', fontsize=12)
+    ax.set_ylabel('Number of Hours', fontsize=12)
+    
+    # Add value labels on top of each bar
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(
+            bar.get_x() + bar.get_width()/2.,
+            height,
+            f'{int(height)}',
+            ha='center',
+            va='bottom'
+        )
+    
+    # Rotate x-axis labels for better readability
+    plt.xticks(rotation=45)
+    
+    # Add grid for better readability
+    ax.grid(True, axis='y', linestyle='--', alpha=0.7)
+    
+    # Adjust layout to prevent label cutoff
+    plt.tight_layout()
+    
+    # Save figure to BytesIO object for Streamlit display
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+    buf.seek(0)
+    img = Image.open(buf)
+    img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))
+    
+    # Display in Streamlit
+    st.image(img)
+    
+    # Store figure in all_figs dictionary
+    all_figs["heat_index_distribution"] = fig
 
     # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)    
@@ -800,6 +882,12 @@ if st.button("Generate Charts"):
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Hourly Line Charts of Indoor & Outdoor</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_and_display_hourly_line_charts(indoor_df_hourly, outdoor_df_hourly, pollutant_display_names, all_figs)
+
+                    # Add this after plot_hourly_heat_index_chart() call
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Heat Index Category Distribution</h3>", unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    plot_heat_index_distribution(indoor_df_hourly, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
