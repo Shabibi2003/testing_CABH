@@ -267,16 +267,20 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
+    # Ensure the index is in datetime format and convert to 24-hour format
+    indoor_df_hourly.index = pd.to_datetime(indoor_df_hourly.index, format='%I:%M %p', errors='coerce')
+    outdoor_df_hourly.index = pd.to_datetime(outdoor_df_hourly.index, format='%I:%M %p', errors='coerce')
+
     # Define time intervals and their labels
     time_intervals = {
-        "Breakfast (6 AM - 9 AM)": (6, 9),
+        "Breakfast (7 AM - 10 AM)": (7, 10),
         "Lunch (12 PM - 3 PM)": (12, 15),
-        "Dinner (6 PM - 9 PM)": (18, 21)
+        "Dinner (7 PM - 10 PM)": (19, 22)
     }
     colors = {
-        "Breakfast (6 AM - 9 AM)": 'blue',
+        "Breakfast (7 AM - 10 AM)": 'blue',
         "Lunch (12 PM - 3 PM)": 'green',
-        "Dinner (6 PM - 9 PM)": 'red'
+        "Dinner (7 PM - 10 PM)": 'red'
     }
 
     for pollutant in pollutants:
