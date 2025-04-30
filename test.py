@@ -981,7 +981,7 @@ if st.button("Generate Charts"):
                         st.markdown("<br>", unsafe_allow_html=True)
                         st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Yearly Heat Index Distribution</h3>", unsafe_allow_html=True)
                         st.markdown("<br>", unsafe_allow_html=True)
-                        plot_yearly_heat_index_distribution(indoor_df, all_figs)
+                        plot_yearly_heat_index_distribution(indoor_df_year, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
