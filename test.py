@@ -297,11 +297,11 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             fig, ax = plt.subplots(figsize=(10, 6))
             for interval, color in colors.items():
                 interval_data = data[data['time_interval'] == interval]
-                ax.hist(interval_data[f"{pollutant}_x"], interval_data[f"{pollutant}_y"], color=color, alpha=0.7, label=interval)
+                ax.scatter(interval_data[f"{pollutant}_x"], interval_data[f"{pollutant}_y"], color=color, alpha=0.7, label=interval)
 
             # Plot data points outside defined intervals in gray
             other_data = data[data['time_interval'] == "Other"]
-            ax.hist(other_data[f"{pollutant}_x"], other_data[f"{pollutant}_y"], color='gray', alpha=0.5, label="Other")
+            ax.scatter(other_data[f"{pollutant}_x"], other_data[f"{pollutant}_y"], color='gray', alpha=0.5, label="Other")
 
             ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
             ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
