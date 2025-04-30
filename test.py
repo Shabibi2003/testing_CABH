@@ -262,14 +262,20 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
         all_figs[f"{feature}_heatmap"] = fig
 
 # Remaining code with corrected indentation...
+import matplotlib.pyplot as plt
+import pandas as pd
+import io
+from PIL import Image
+import streamlit as st
+
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
     # Resample to hourly averages
     indoor_df_hourly = indoor_df.resample('H').mean()
     outdoor_df_hourly = outdoor_df.resample('H').mean()
 
-    # Ensure the index is in datetime format and convert to 24-hour format
-    indoor_df_hourly.index = pd.to_datetime(indoor_df_hourly.index, format='%I:%M %p', errors='coerce')
-    outdoor_df_hourly.index = pd.to_datetime(outdoor_df_hourly.index, format='%I:%M %p', errors='coerce')
+    # Ensure the index is in datetime format
+    indoor_df_hourly.index = pd.to_datetime(indoor_df_hourly.index, errors='coerce')
+    outdoor_df_hourly.index = pd.to_datetime(outdoor_df_hourly.index, errors='coerce')
 
     # Define time intervals and their labels
     time_intervals = {
@@ -294,6 +300,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
                 lambda hour: next((label for label, (start, end) in time_intervals.items() if start <= hour < end), "Other")
             )
 
+            ## SCATTER PLOT
             fig, ax = plt.subplots(figsize=(10, 6))
             for interval, color in colors.items():
                 interval_data = data[data['time_interval'] == interval]
@@ -309,6 +316,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             ax.legend(title="Time Interval")
             ax.grid(True)
 
+            # Save and show scatter plot
             buf = io.BytesIO()
             fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
             buf.seek(0)
@@ -317,6 +325,26 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
 
             st.image(img)
             all_figs[f"{pollutant}_scatter"] = fig
+
+            ## --- HISTOGRAM SECTION (NEW) ---
+            fig_hist, ax_hist = plt.subplots(figsize=(10, 6))
+            ax_hist.hist(data[f"{pollutant}_x"], bins=20, alpha=0.5, label='Indoor', color='skyblue')
+            ax_hist.hist(data[f"{pollutant}_y"], bins=20, alpha=0.5, label='Outdoor', color='orange')
+            ax_hist.set_title(f"Histogram: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
+            ax_hist.set_xlabel(f"{pollutant.upper()} Concentration", fontsize=12)
+            ax_hist.set_ylabel("Frequency", fontsize=12)
+            ax_hist.legend()
+            ax_hist.grid(True)
+
+            buf_hist = io.BytesIO()
+            fig_hist.savefig(buf_hist, format="png", dpi=100, bbox_inches='tight')
+            buf_hist.seek(0)
+            img_hist = Image.open(buf_hist)
+            img_hist = img_hist.resize((int(img_hist.width * 0.7), int(img_hist.height * 0.7)))
+
+            st.image(img_hist)
+            all_figs[f"{pollutant}_histogram"] = fig_hist
+
 
 def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
     seasons = {
