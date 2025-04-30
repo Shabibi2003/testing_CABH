@@ -333,8 +333,8 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
         time_buckets = {
             '(12 AM - 3 AM)':(24,3),
             '(4 AM - 7 AM)': (4,7),
-            "Breakfast (7 AM - 9 AM)": (7, 9),
-            "Lunch (1 PM - 3 PM)": (1, 2),
+            "Breakfast (7 AM - 9 AM)": (7, 8),
+            "Lunch (1 PM - 2 PM)": (13, 14),
             '(3 PM - 7 PM)':(15, 19),
             "Dinner (7 PM - 10 PM)": (19, 21),
             '(10 PM - 12 PM)':(22,24)
