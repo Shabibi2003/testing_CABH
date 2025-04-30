@@ -326,31 +326,78 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             st.image(img)
             all_figs[f"{pollutant}_scatter"] = fig
 
-            ## --- TIME-BASED HISTOGRAM (BAR PLOT) SECTION (NEW) ---
-            fig_hist, ax_hist = plt.subplots(figsize=(12, 6))
+        ## --- TIME INTERVAL HISTOGRAM (BAR PLOT) SECTION (NEW) ---
+        fig_hist, ax_hist = plt.subplots(figsize=(10, 6))
 
-            # Plot Indoor
-            ax_hist.bar(data.index, data[f"{pollutant}_x"], width=0.03, label='Indoor', alpha=0.6, color='skyblue')
+        # Define time intervals for classification
+        time_buckets = {
+            "Breakfast (8 AM - 11 AM)": (8, 11),
+            "Lunch (1 PM - 3 PM)": (13, 15),
+            "Dinner (7 PM - 9 PM)": (19, 21)
+        }
 
-            # Plot Outdoor
-            ax_hist.bar(data.index, data[f"{pollutant}_y"], width=0.03, label='Outdoor', alpha=0.6, color='orange', bottom=data[f"{pollutant}_x"])
+        interval_labels = []
+        indoor_means = []
+        outdoor_means = []
 
-            ax_hist.set_title(f"Pollutant Concentration Over Time - {pollutant.upper()}", fontsize=14)
-            ax_hist.set_xlabel("Time", fontsize=12)
-            ax_hist.set_ylabel(f"{pollutant.upper()} Concentration", fontsize=12)
-            ax_hist.legend()
-            ax_hist.grid(True)
+        # Calculate average for each time bucket
+        for label, (start_hour, end_hour) in time_buckets.items():
+            interval_data = data[(data.index.hour >= start_hour) & (data.index.hour < end_hour)]
+            if not interval_data.empty:
+                indoor_mean = interval_data[f"{pollutant}_x"].mean()
+                outdoor_mean = interval_data[f"{pollutant}_y"].mean()
+                
+                interval_labels.append(label)
+                indoor_means.append(indoor_mean)
+                outdoor_means.append(outdoor_mean)
+                ## --- TIME INTERVAL HISTOGRAM (BAR PLOT) SECTION (NEW) ---
+                fig_hist, ax_hist = plt.subplots(figsize=(10, 6))
 
-            fig_hist.autofmt_xdate()  # Auto format x-axis dates
+                # Define time intervals for classification
+                time_buckets = {
+                    "Breakfast (8 AM - 11 AM)": (8, 11),
+                    "Lunch (1 PM - 3 PM)": (13, 15),
+                    "Dinner (7 PM - 9 PM)": (19, 21)
+                }
 
-            buf_hist = io.BytesIO()
-            fig_hist.savefig(buf_hist, format="png", dpi=100, bbox_inches='tight')
-            buf_hist.seek(0)
-            img_hist = Image.open(buf_hist)
-            img_hist = img_hist.resize((int(img_hist.width * 0.7), int(img_hist.height * 0.7)))
+                interval_labels = []
+                indoor_means = []
+                outdoor_means = []
 
-            st.image(img_hist)
-            all_figs[f"{pollutant}_histogram_time"] = fig_hist
+                # Calculate average for each time bucket
+                for label, (start_hour, end_hour) in time_buckets.items():
+                    interval_data = data[(data.index.hour >= start_hour) & (data.index.hour < end_hour)]
+                    if not interval_data.empty:
+                        indoor_mean = interval_data[f"{pollutant}_x"].mean()
+                        outdoor_mean = interval_data[f"{pollutant}_y"].mean()
+                
+                interval_labels.append(label)
+                indoor_means.append(indoor_mean)
+                outdoor_means.append(outdoor_mean)
+        # Create bar positions
+        x = range(len(interval_labels))
+
+        bar_width = 0.35
+        ax_hist.bar([i - bar_width/2 for i in x], indoor_means, width=bar_width, label='Indoor', color='skyblue')
+        ax_hist.bar([i + bar_width/2 for i in x], outdoor_means, width=bar_width, label='Outdoor', color='orange')
+
+        ax_hist.set_xticks(x)
+        ax_hist.set_xticklabels(interval_labels, rotation=30, ha='right')
+        ax_hist.set_title(f"Indoor vs Outdoor - {pollutant.upper()} by Time Interval", fontsize=14)
+        ax_hist.set_xlabel("Time Interval", fontsize=12)
+        ax_hist.set_ylabel(f"Avg {pollutant.upper()} Concentration", fontsize=12)
+        ax_hist.legend()
+        ax_hist.grid(True)
+
+        buf_hist = io.BytesIO()
+        fig_hist.savefig(buf_hist, format="png", dpi=100, bbox_inches='tight')
+        buf_hist.seek(0)
+        img_hist = Image.open(buf_hist)
+        img_hist = img_hist.resize((int(img_hist.width * 0.7), int(img_hist.height * 0.7)))
+
+        st.image(img_hist)
+        all_figs[f"{pollutant}_histogram_timeinterval"] = fig_hist
+
 
 
 
