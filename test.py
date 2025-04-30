@@ -972,10 +972,12 @@ if st.button("Generate Charts"):
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Heat Index Category Distribution</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_heat_index_distribution(indoor_df_hourly, all_figs)
-                    plot_yearly_heat_index_distribution(indoor_df, all_figs)
 
                     # Add after the seasonal line chart section
-                    if indoor_rows_year:                        
+                    if indoor_rows_year:
+                        indoor_df_year = pd.DataFrame(indoor_rows_year, columns=["datetime", "pm25", "pm10", "aqi", "co2", "voc", "temp", "humidity"])
+                        indoor_df_year['datetime'] = pd.to_datetime(indoor_df_year['datetime'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                        indoor_df_year.set_index('datetime', inplace=True)                        
                         st.markdown("<br>", unsafe_allow_html=True)
                         st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Yearly Heat Index Distribution</h3>", unsafe_allow_html=True)
                         st.markdown("<br>", unsafe_allow_html=True)
