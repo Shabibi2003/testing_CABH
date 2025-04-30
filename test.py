@@ -355,7 +355,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             x = range(len(interval_labels))
             bar_width = 0.35
 
-            ax_hist.bar([i - bar_width/2 for i in x], indoor_means, width=bar_width, label='Indoor', color='skyblue')
+            ax_hist.bar([i - bar_width/2 for i in x], indoor_means, width=bar_width, label='Indoor', color='blue')
             ax_hist.bar([i + bar_width/2 for i in x], outdoor_means, width=bar_width, label='Outdoor', color='orange')
 
             ax_hist.set_xticks(x)
