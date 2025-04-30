@@ -308,7 +308,7 @@ def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
                 else:
                     ax.plot([], [], label=f"{season} (No Data)")
     
-            ax.set_title(f"Yearly {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
+            ax.set_title(f"Annual {pollutant.upper()} Trends for Residential Buildings ({year})", fontsize=14)
             ax.set_xlabel("Date", fontsize=12)
             ax.set_ylabel(f"{pollutant.upper()}", fontsize=12)
             ax.legend(title="Season")
@@ -662,7 +662,7 @@ if st.button("Generate Charts"):
                     else:
                         st.info("Seasonal line charts are only available for residential buildings.")
                 else:
-                    st.warning("No yearly data found for the selected Device ID.")
+                    st.warning("No Annual data found for the selected Device ID.")
                 
                 if all_figs:
                     pdf_data = create_pdf_from_figs(all_figs)
