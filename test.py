@@ -337,7 +337,7 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             '(3 PM - 7 PM)':(15, 19),
             "Dinner (7 PM - 10 PM)": (19, 21),
             '(10 PM - 12 AM)':(22,24),
-            '(12 AM - 3 AM)':(1,3)
+            '(12 AM - 3 AM)':(24,3)
         }
 
         interval_labels = []
