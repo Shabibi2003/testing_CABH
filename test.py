@@ -972,6 +972,7 @@ if st.button("Generate Charts"):
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Heat Index Category Distribution</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_heat_index_distribution(indoor_df_hourly, all_figs)
+                    plot_yearly_heat_index_distribution(indoor_df, all_figs)
 
                     # Add after the seasonal line chart section
                     if indoor_rows_year:                        
