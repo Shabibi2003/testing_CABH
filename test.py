@@ -263,30 +263,56 @@ def plot_and_display_feature_heatmaps(indoor_df, features, year, month, all_figs
 
 # Remaining code with corrected indentation...
 def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
-        # Resample to hourly averages
-        indoor_df_hourly = indoor_df.resample('H').mean()
-        outdoor_df_hourly = outdoor_df.resample('H').mean()
+    # Resample to hourly averages
+    indoor_df_hourly = indoor_df.resample('H').mean()
+    outdoor_df_hourly = outdoor_df.resample('H').mean()
 
-        for pollutant in pollutants:
-            if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
-                data = pd.merge(indoor_df_hourly[[pollutant]], outdoor_df_hourly[[pollutant]], left_index=True, right_index=True, how='inner')
-                if data.empty:
-                    continue
+    # Define time intervals and their labels
+    time_intervals = {
+        "Breakfast (6 AM - 9 AM)": (6, 9),
+        "Lunch (12 PM - 3 PM)": (12, 15),
+        "Dinner (6 PM - 9 PM)": (18, 21)
+    }
+    colors = {
+        "Breakfast (6 AM - 9 AM)": 'blue',
+        "Lunch (12 PM - 3 PM)": 'green',
+        "Dinner (6 PM - 9 PM)": 'red'
+    }
 
-                fig, ax = plt.subplots(figsize=(10, 6))
-                ax.scatter(data[pollutant + '_x'], data[pollutant + '_y'], color='purple', alpha=0.7)
-                ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
-                ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
-                ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
-                ax.grid(True)
-                buf = io.BytesIO()
-                fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
-                buf.seek(0)
-                img = Image.open(buf)
-                img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))  # Scale to 70%
-                
-                st.image(img)
-                all_figs[f"{pollutant}_scatter"] = fig
+    for pollutant in pollutants:
+        if pollutant in indoor_df_hourly.columns and pollutant in outdoor_df_hourly.columns:
+            data = pd.merge(indoor_df_hourly[[pollutant]], outdoor_df_hourly[[pollutant]], left_index=True, right_index=True, how='inner')
+            if data.empty:
+                continue
+
+            # Add a column to classify data points into time intervals
+            data['time_interval'] = data.index.hour.map(
+                lambda hour: next((label for label, (start, end) in time_intervals.items() if start <= hour < end), "Other")
+            )
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            for interval, color in colors.items():
+                interval_data = data[data['time_interval'] == interval]
+                ax.scatter(interval_data[f"{pollutant}_x"], interval_data[f"{pollutant}_y"], color=color, alpha=0.7, label=interval)
+
+            # Plot data points outside defined intervals in gray
+            other_data = data[data['time_interval'] == "Other"]
+            ax.scatter(other_data[f"{pollutant}_x"], other_data[f"{pollutant}_y"], color='gray', alpha=0.5, label="Other")
+
+            ax.set_title(f"Hourly Avg: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
+            ax.set_xlabel(f"{pollutant.upper()} (Indoor)", fontsize=12)
+            ax.set_ylabel(f"{pollutant.upper()} (Outdoor)", fontsize=12)
+            ax.legend(title="Time Interval")
+            ax.grid(True)
+
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+            buf.seek(0)
+            img = Image.open(buf)
+            img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))  # Scale to 70%
+
+            st.image(img)
+            all_figs[f"{pollutant}_scatter"] = fig
 
 def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
     seasons = {
