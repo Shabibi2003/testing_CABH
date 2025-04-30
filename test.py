@@ -326,15 +326,22 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             st.image(img)
             all_figs[f"{pollutant}_scatter"] = fig
 
-            ## --- HISTOGRAM SECTION (NEW) ---
-            fig_hist, ax_hist = plt.subplots(figsize=(10, 6))
-            ax_hist.hist(data[f"{pollutant}_x"], bins=20, alpha=0.5, label='Indoor', color='skyblue')
-            ax_hist.hist(data[f"{pollutant}_y"], bins=20, alpha=0.5, label='Outdoor', color='orange')
-            ax_hist.set_title(f"Histogram: Indoor vs Outdoor - {pollutant.upper()}", fontsize=14)
-            ax_hist.set_xlabel(f"{pollutant.upper()} Concentration", fontsize=12)
-            ax_hist.set_ylabel("Frequency", fontsize=12)
+            ## --- TIME-BASED HISTOGRAM (BAR PLOT) SECTION (NEW) ---
+            fig_hist, ax_hist = plt.subplots(figsize=(12, 6))
+
+            # Plot Indoor
+            ax_hist.bar(data.index, data[f"{pollutant}_x"], width=0.03, label='Indoor', alpha=0.6, color='skyblue')
+
+            # Plot Outdoor
+            ax_hist.bar(data.index, data[f"{pollutant}_y"], width=0.03, label='Outdoor', alpha=0.6, color='orange', bottom=data[f"{pollutant}_x"])
+
+            ax_hist.set_title(f"Pollutant Concentration Over Time - {pollutant.upper()}", fontsize=14)
+            ax_hist.set_xlabel("Time", fontsize=12)
+            ax_hist.set_ylabel(f"{pollutant.upper()} Concentration", fontsize=12)
             ax_hist.legend()
             ax_hist.grid(True)
+
+            fig_hist.autofmt_xdate()  # Auto format x-axis dates
 
             buf_hist = io.BytesIO()
             fig_hist.savefig(buf_hist, format="png", dpi=100, bbox_inches='tight')
@@ -343,7 +350,8 @@ def plot_indoor_vs_outdoor_scatter(indoor_df, outdoor_df, pollutants, all_figs):
             img_hist = img_hist.resize((int(img_hist.width * 0.7), int(img_hist.height * 0.7)))
 
             st.image(img_hist)
-            all_figs[f"{pollutant}_histogram"] = fig_hist
+            all_figs[f"{pollutant}_histogram_time"] = fig_hist
+
 
 
 def plot_residential_seasonal_line_chart(indoor_df, pollutants, year, all_figs):
