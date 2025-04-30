@@ -727,6 +727,90 @@ def plot_heat_index_distribution(indoor_df_hourly, all_figs):
     # Store figure in all_figs dictionary
     all_figs["heat_index_distribution"] = fig
 
+def plot_yearly_heat_index_distribution(indoor_df_year, all_figs):
+    """
+    Creates a bar chart showing the yearly distribution of heat index categories.
+    
+    Parameters:
+    indoor_df_year (pd.DataFrame): DataFrame with yearly indoor temperature and humidity data
+    all_figs (dict): Dictionary to store the generated figures
+    """
+    # Initialize monthly category counts
+    monthly_category_counts = {month: {'Satisfactory': 0, 'Moderate': 0, 'Poor': 0, 'Very Poor': 0, 'Severe': 0} 
+                             for month in range(1, 13)}
+    
+    # Calculate heat index for each data point
+    for index, row in indoor_df_year.iterrows():
+        if pd.notna(row['temp']) and pd.notna(row['humidity']):
+            month = index.month
+            heat_index = calculate_heat_index(row['temp'], row['humidity'])
+            
+            # Categorize heat index value
+            if heat_index < 27:
+                monthly_category_counts[month]['Satisfactory'] += 1
+            elif heat_index < 32:
+                monthly_category_counts[month]['Moderate'] += 1
+            elif heat_index < 41:
+                monthly_category_counts[month]['Poor'] += 1
+            elif heat_index < 54:
+                monthly_category_counts[month]['Very Poor'] += 1
+            else:
+                monthly_category_counts[month]['Severe'] += 1
+    
+    # Prepare data for plotting
+    months = list(calendar.month_abbr)[1:]  # Get month abbreviations
+    categories = ['Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']
+    colors = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000']
+    
+    # Create the stacked bar chart
+    fig, ax = plt.subplots(figsize=(15, 8))
+    
+    bottom = np.zeros(12)  # Initialize the bottom of each stack
+    bars = []
+    
+    for cat, color in zip(categories, colors):
+        values = [monthly_category_counts[m][cat] for m in range(1, 13)]
+        bars.append(ax.bar(months, values, bottom=bottom, label=cat, color=color))
+        bottom += values
+    
+    # Customize the plot
+    ax.set_title('Yearly Distribution of Heat Index Categories by Month', fontsize=14, pad=20)
+    ax.set_xlabel('Months', fontsize=12)
+    ax.set_ylabel('Number of Hours', fontsize=12)
+    
+    # Add legend
+    ax.legend(title='Heat Index Categories', bbox_to_anchor=(1.05, 1), loc='upper left')
+    
+    # Add value labels on the bars
+    for bars_group in bars:
+        for bar in bars_group:
+            height = bar.get_height()
+            if height > 0:  # Only add label if the value is greater than 0
+                ax.text(
+                    bar.get_x() + bar.get_width()/2.,
+                    bar.get_y() + height/2.,
+                    f'{int(height)}',
+                    ha='center',
+                    va='center',
+                    rotation=0
+                )
+    
+    # Adjust layout to prevent label cutoff
+    plt.tight_layout()
+    
+    # Save figure to BytesIO object for Streamlit display
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100, bbox_inches='tight')
+    buf.seek(0)
+    img = Image.open(buf)
+    img = img.resize((int(img.width * 0.7), int(img.height * 0.7)))
+    
+    # Display in Streamlit
+    st.image(img)
+    
+    # Store figure in all_figs dictionary
+    all_figs["yearly_heat_index_distribution"] = fig
+
     # Create columns for user inputs (deviceID, year, month)
 col1, col2, col3 = st.columns(3)    
 with col1:
@@ -888,6 +972,13 @@ if st.button("Generate Charts"):
                     st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Heat Index Category Distribution</h3>", unsafe_allow_html=True)
                     st.markdown("<br>", unsafe_allow_html=True)
                     plot_heat_index_distribution(indoor_df_hourly, all_figs)
+
+                    # Add after the seasonal line chart section
+                    if indoor_rows_year:                        
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown("<h3 style='font-size:30px; text-align:left; font-weight:bold;'>Yearly Heat Index Distribution</h3>", unsafe_allow_html=True)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        plot_yearly_heat_index_distribution(indoor_df, all_figs)
 
                 else:
                     st.warning("No data found for the given Device ID and selected month.")
