@@ -600,7 +600,7 @@ def plot_and_display_heat_index_heatmap(indoor_df, year, month, all_figs):
     
         # Heat Index boundaries and labels
         boundaries = [0,27, 32, 41, 54, 100]
-        labels = ['Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']
+        labels = ['Comfortable', 'Caution', 'Extreme Caution', 'Danger', 'Extreme Danger']
         color_list = ['#006400', '#228B22', '#FFFF00', '#FF7F00', '#FF0000']
         cmap = ListedColormap(color_list)
         norm = BoundaryNorm(boundaries, cmap.N)
