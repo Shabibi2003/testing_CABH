@@ -433,6 +433,7 @@ def plot_and_display_hourly_line_charts(indoor_df_hourly, outdoor_df_hourly, pol
         'heat_index': 41
     }
 
+
     combined_df = pd.concat(
         [indoor_df_hourly.add_suffix('_indoor'), outdoor_df_hourly.add_suffix('_outdoor')],
         axis=1
@@ -664,7 +665,9 @@ def plot_heat_index_distribution(indoor_df_hourly, all_figs):
     
     # Define category boundaries and labels
     boundaries = [0, 27, 32, 41, 54, float('inf')]
-    categories = ['Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']
+    # Define category labels
+    categories = ['Comfortable', 'Caution', 'Extreme Caution', 'Danger', 'Extreme Danger']
+
     
     # Initialize category counts
     category_counts = {cat: 0 for cat in categories}
